@@ -41,7 +41,12 @@ spring:
       max-request-size: 12MB
 
 server:
-  port: ${SERVER_PORT:8080}
+  # Render indica el puerto en PORT; en desarrollo se usa 8080.
+  port: ${PORT:${SERVER_PORT:8080}}
+  # Detras del proxy de Render la conexion llega como http. Con esto la
+  # aplicacion lee X-Forwarded-Proto y sabe que el visitante vino por https,
+  # que es lo que habilita la cabecera HSTS.
+  forward-headers-strategy: native
   error:
     include-message: always
 
