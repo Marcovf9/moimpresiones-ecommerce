@@ -176,18 +176,31 @@ function RubrosDestacados() {
 function Hero() {
   return (
     <section className="relative grid min-h-dvh place-items-center overflow-hidden bg-ink-900">
-      <img
-        src="/imagenes/portada.jpg"
-        alt=""
-        aria-hidden="true"
-        // Es lo primero que se ve: la carga ansiosa evita el salto visual.
-        fetchPriority="high"
-        className="absolute inset-0 size-full object-cover opacity-60"
-        onError={(event) => {
-          // Sin foto cargada todavia, el degradado sostiene la portada solo.
-          event.currentTarget.style.display = 'none'
-        }}
-      />
+      {/* La foto pesa 345 KB en JPG: en WebP baja a 131 KB, y en telefono se
+          entrega una de 900 px de ancho (57 KB) en lugar de la grande. El JPG
+          queda de respaldo para navegadores sin WebP. */}
+      <picture>
+        <source
+          type="image/webp"
+          media="(max-width: 640px)"
+          srcSet="/imagenes/portada-900.webp"
+        />
+        <source type="image/webp" srcSet="/imagenes/portada.webp" />
+        <img
+          src="/imagenes/portada.jpg"
+          alt=""
+          aria-hidden="true"
+          // Es lo primero que se ve: la carga ansiosa evita el salto visual.
+          fetchPriority="high"
+          width={1672}
+          height={941}
+          className="absolute inset-0 size-full object-cover opacity-60"
+          onError={(event) => {
+            // Sin foto cargada todavia, el degradado sostiene la portada solo.
+            event.currentTarget.style.display = 'none'
+          }}
+        />
+      </picture>
 
       {/* El degradado es más fuerte en el medio que antes: ahí va el subtítulo,
           y la foto de la máquina tiene zonas claras que lo dejaban al límite. */}

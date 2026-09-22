@@ -6,6 +6,24 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- La foto de portada es lo primero que se ve y la pide React recien
+         cuando arranca: precargarla adelanta el pixel mas grande de la pagina. -->
+    <link
+      rel="preload"
+      as="image"
+      href="/imagenes/portada.webp"
+      type="image/webp"
+      media="(min-width: 641px)"
+      fetchpriority="high"
+    />
+    <link
+      rel="preload"
+      as="image"
+      href="/imagenes/portada-900.webp"
+      type="image/webp"
+      media="(max-width: 640px)"
+      fetchpriority="high"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

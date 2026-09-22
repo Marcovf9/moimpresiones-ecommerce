@@ -48,7 +48,7 @@ export function Layout() {
             className="flex h-11 items-center rounded-lg px-1 transition hover:bg-white/10"
           >
             <img
-              src="/imagenes/logo.png"
+              src="/imagenes/logo.webp"
               alt="MO Impresiones"
               width={600}
               height={313}
@@ -92,7 +92,7 @@ function SiteFooter() {
       <div className="mx-auto grid max-w-6xl gap-8 px-6 py-12 sm:grid-cols-2">
         <div>
           <img
-            src="/imagenes/logo.png"
+            src="/imagenes/logo.webp"
             alt="MO Impresiones"
             width={600}
             height={313}
