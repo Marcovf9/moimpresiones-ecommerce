@@ -221,13 +221,14 @@ Cloudinary credentials, SMTP and contact details. See [`.env.ejemplo`](.env.ejem
 ## Tests
 
 ```bash
-cd backend  && ./mvnw test   # 29 JUnit tests
+cd backend  && ./mvnw test   # 33 JUnit tests
 cd frontend && npm test      # 14 Vitest tests
 ```
 
 The backend tests cover the pieces where a mistake is silent or expensive: the WhatsApp message
-builder, the quote notification email, login throttling, the password policy, Cloudinary URL
-handling and text normalisation. The frontend tests cover the quote list — the one thing a visitor
+builder, the quote notification email, login throttling and the submission rate limiter (including
+concurrent requests from one address), the password policy, Cloudinary URL handling and text
+normalisation. The frontend tests cover the quote list — the one thing a visitor
 builds up across pages, kept in `localStorage` — and the image transformation that keeps a 2.6 MB
 photo from being served as is.
 
