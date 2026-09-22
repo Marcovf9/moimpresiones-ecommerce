@@ -4,6 +4,7 @@ import { ApiError, api } from '../api/client'
 import type { Category, QuoteAttachmentValues, QuoteCreated } from '../api/types'
 import { useApi } from '../hooks/useApi'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { metaDe } from '../config/paginas'
 import { imagenOptimizada } from '../api/imagenes'
 import { itemVacio, usePresupuesto, MAX_ITEMS } from '../hooks/usePresupuesto'
 import { PageHeader } from '../components/PageChrome'
@@ -35,12 +36,7 @@ export function QuotePage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null)
 
-  usePageMeta({
-    title: 'Cotizá tu proyecto',
-    description:
-      'Contanos qué necesitás imprimir y te respondemos con un presupuesto a medida. Podés pedir por varios productos a la vez.',
-    path: '/cotiza',
-  })
+  usePageMeta(metaDe('/cotiza'))
 
   // Al llegar desde una ficha con ?producto=slug, ese producto entra solo.
   const productoDeLaUrl = searchParams.get('producto')

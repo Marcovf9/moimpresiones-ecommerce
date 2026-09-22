@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowRightIcon } from '../components/Icons'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { metaDe } from '../config/paginas'
 import { BarraCMYK, colorDeRubro } from '../components/BarraCMYK'
 import { api } from '../api/client'
 import type { Category } from '../api/types'
@@ -27,12 +28,7 @@ export function HomePage() {
 
   useRevelarAlScroll()
 
-  usePageMeta({
-    title: 'MO Impresiones',
-    description:
-      'Imprenta en Córdoba, Argentina. Más de 30 años imprimiendo: institucional, comercial, editorial, packaging, impresos numerados y regalos empresariales.',
-    path: '/',
-  })
+  usePageMeta(metaDe('/'))
 
   // El menu enlaza a /#quienes-somos: al llegar con ese hash, bajamos a la seccion.
   useEffect(() => {

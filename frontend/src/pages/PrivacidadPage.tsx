@@ -1,15 +1,11 @@
 import { EMPRESA, domicilioCompleto, identificacionFiscal } from '../config/empresa'
 import { useContactInfo } from '../hooks/useContactInfo'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { metaDe } from '../config/paginas'
 import { LegalPage, LegalSection } from '../components/LegalPage'
 
 export function PrivacidadPage() {
-  usePageMeta({
-    title: 'Política de privacidad',
-    description:
-      'Qué datos personales recolecta MO Impresiones a través del sitio, para qué los usa y cómo ejercer tus derechos.',
-    path: '/privacidad',
-  })
+  usePageMeta(metaDe('/privacidad'))
 
   const contact = useContactInfo()
   const fiscal = identificacionFiscal()
