@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Category, FiltrosDisponibles, ProductSummary } from '../api/types'
 import { useApi } from '../hooks/useApi'
+import { categoriasDelHtml } from '../api/datosDelHtml'
 import { ArrowRightIcon, CheckIcon, ChevronDownIcon, PlusIcon } from '../components/Icons'
 import { PageHeader, ErrorState } from '../components/PageChrome'
 import { usePageMeta } from '../hooks/usePageMeta'
@@ -36,7 +37,11 @@ function useModoEleccion() {
  * reabría el primero.
  */
 export function ProductsPage() {
-  const { data: categories, loading, error } = useApi<Category[]>(() => api.categories(), [])
+  const { data: categories, loading, error } = useApi<Category[]>(
+    () => api.categories(),
+    [],
+    categoriasDelHtml,
+  )
   const [filtros, setFiltros] = useState<FiltrosElegidos>({})
   const [searchParams, setSearchParams] = useSearchParams()
   const hayFiltro = Boolean(filtros.finishing || filtros.material)

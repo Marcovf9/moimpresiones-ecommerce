@@ -7,6 +7,7 @@ import { BarraCMYK, colorDeRubro } from '../components/BarraCMYK'
 import { api } from '../api/client'
 import type { Category } from '../api/types'
 import { useApi } from '../hooks/useApi'
+import { categoriasDelHtml } from '../api/datosDelHtml'
 import { ImagenConCarga } from '../components/ImagenConCarga'
 import { ComoTrabajamos } from '../components/ComoTrabajamos'
 import { ComoLlegar } from '../components/ComoLlegar'
@@ -91,7 +92,7 @@ export function HomePage() {
  * entrar al menú para enterarse de qué se hace acá.
  */
 function RubrosDestacados() {
-  const { data: categories } = useApi<Category[]>(() => api.categories(), [])
+  const { data: categories } = useApi<Category[]>(() => api.categories(), [], categoriasDelHtml)
   useRevelarAlScroll([categories])
 
   if (!categories || categories.length === 0) return null
