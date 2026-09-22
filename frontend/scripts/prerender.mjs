@@ -37,6 +37,9 @@ const SUFIJO = 'MO Impresiones'
 const paginas = JSON.parse(
   await readFile(join(AQUI, '..', 'src', 'config', 'paginas.json'), 'utf8'),
 )
+const institucional = JSON.parse(
+  await readFile(join(AQUI, '..', 'src', 'config', 'institucional.json'), 'utf8'),
+)
 
 /** Escapa lo que se inserta en un atributo HTML. */
 function escapar(texto) {
@@ -196,6 +199,35 @@ function cuerpoDelCatalogo(categorias) {
     .join('\n      ')
 }
 
+/**
+ * La portada: quienes somos y que se imprime.
+ *
+ * <p>Es el texto que Google usa para describir el sitio en sus resultados.
+ * Mientras el dominio no tuvo contenido propio, tomo la descripcion de la
+ * pagina de estacionamiento que traia de antes, en ingles y de otro pais.
+ */
+function cuerpoDeLaPortada(categorias) {
+  return `<div class="mt-8 space-y-4 text-ink-100">
+        ${institucional.quienesSomos.map((parrafo) => `<p>${texto(parrafo)}</p>`).join('\n        ')}
+      </div>
+      <h2 class="mt-10 font-display text-2xl font-semibold text-white">Qué imprimimos</h2>
+      <ul class="mt-3 space-y-1 text-ink-100">
+        ${categorias
+          .map(
+            (categoria) =>
+              `<li>${enlace(`/productos?rubro=${categoria.slug}`, categoria.name)}${
+                categoria.description ? ` — ${texto(categoria.description)}` : ''
+              }</li>`,
+          )
+          .join('\n        ')}
+      </ul>
+      <p class="mt-8 text-ink-300">José Javier Díaz 50, X5000, Córdoba, Argentina · Lunes a viernes de 8 a 16 h</p>
+      <p class="mt-2 text-ink-300">${enlace('/cotiza', 'Pedí un presupuesto')} · ${enlace(
+        '/terminaciones',
+        'Terminaciones',
+      )} · ${enlace('/preguntas-frecuentes', 'Preguntas frecuentes')}</p>`
+}
+
 function cuerpoDeTerminaciones(terminaciones) {
   return `<ul class="mt-8 space-y-3 text-ink-100">
         ${terminaciones
@@ -298,7 +330,13 @@ try {
   catalogo.datos = { categorias }
 
   // La portada muestra los rubros con su foto.
-  destinoDe('/').datos = { categorias }
+  const portada = destinoDe('/')
+  portada.datos = { categorias }
+  portada.contenido = resumen({
+    titulo: portada.titulo,
+    descripcion: portada.descripcion,
+    cuerpo: cuerpoDeLaPortada(categorias),
+  })
 
   destinos.push(...(await fichasDesde(categorias)))
 } catch (error) {

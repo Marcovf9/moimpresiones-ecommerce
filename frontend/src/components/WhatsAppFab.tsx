@@ -55,7 +55,10 @@ export function WhatsAppFab() {
   }
 
   return (
-    <div className="fixed right-5 bottom-5 z-30 flex items-end gap-2">
+    // El contenedor no recibe toques: ocupa el ancho del globo aunque esté
+    // oculto, y ese rectángulo invisible se tragaba los clics de lo que
+    // estuviera debajo, como el botón "Finalizado" de la barra del catálogo.
+    <div className="pointer-events-none fixed right-5 bottom-5 z-30 flex items-end gap-2">
       {/* aria-hidden: el globo repite lo que ya dice el botón, y para quien usa
           lector de pantalla sería una interrupción sin motivo. */}
       <div
@@ -83,7 +86,7 @@ export function WhatsAppFab() {
         rel="noreferrer"
         onClick={callar}
         aria-label="Escribinos por WhatsApp"
-        className="grid size-14 shrink-0 place-items-center rounded-full bg-[#25D366] text-white shadow-lg transition hover:scale-105 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-ink-900 focus-visible:ring-offset-2"
+        className="pointer-events-auto grid size-14 shrink-0 place-items-center rounded-full bg-[#25D366] text-white shadow-lg transition hover:scale-105 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-ink-900 focus-visible:ring-offset-2"
       >
         <WhatsAppIcon className="size-7" />
       </a>
