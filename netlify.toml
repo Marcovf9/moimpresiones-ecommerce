@@ -1,8 +1,8 @@
 # Configuracion del frontend en Netlify.
 #
-# moimpresiones-api.onrender.com es la direccion que Render le da al servicio
-# del render.yaml. Si ese nombre estaba tomado y Render asigno otro, cambiarlo
-# aca en los tres lugares donde aparece.
+# El backend se publica en api.moimpresiones.com (dominio propio en Render,
+# registro CNAME en GoDaddy). Asi el sitio no depende de la direccion
+# onrender.com: si cambia el hosting, solo se toca el DNS.
 
 [build]
   base = "frontend"
@@ -12,19 +12,19 @@
 [build.environment]
   NODE_VERSION = "22"
   # A donde le habla el sitio. Vite la fija en el momento del build.
-  VITE_API_URL = "https://moimpresiones-api.onrender.com"
+  VITE_API_URL = "https://api.moimpresiones.com"
 
 # El sitemap y el robots.txt los genera el backend a partir del catalogo, pero
 # Google los busca en el dominio del sitio: Netlify los trae del backend.
 [[redirects]]
   from = "/sitemap.xml"
-  to = "https://moimpresiones-api.onrender.com/sitemap.xml"
+  to = "https://api.moimpresiones.com/sitemap.xml"
   status = 200
   force = true
 
 [[redirects]]
   from = "/robots.txt"
-  to = "https://moimpresiones-api.onrender.com/robots.txt"
+  to = "https://api.moimpresiones.com/robots.txt"
   status = 200
   force = true
 
