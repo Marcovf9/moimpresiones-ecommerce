@@ -114,8 +114,10 @@ Hay datos que el código deja explícitamente en blanco en lugar de inventarlos:
 3. **Fotos** de productos y terminaciones: las actuales vienen en la migración
    `V11__fotos_del_catalogo.sql`; las nuevas se cargan desde el panel.
 
-Los términos y condiciones están redactados para una imprenta, pero **conviene que
-los revise un abogado** antes de publicarlos.
+Los términos y condiciones y la política de privacidad los revisó y aprobó el
+cliente el 22/09/2026, y esa es la fecha que muestran las dos páginas. Si
+cambia algo del servicio (formas de pago, envíos, plazos), hay que actualizar
+el texto y esa fecha.
 
 ## Despliegue
 

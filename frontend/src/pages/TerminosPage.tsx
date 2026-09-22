@@ -15,7 +15,7 @@ export function TerminosPage() {
   const domicilio = domicilioCompleto()
 
   return (
-    <LegalPage title="Términos y condiciones" updatedAt="1 de septiembre de 2026">
+    <LegalPage title="Términos y condiciones" updatedAt="22 de septiembre de 2026">
       <LegalSection title="1. Quiénes somos">
         <p>
           Este sitio pertenece a {EMPRESA.nombreComercial}
