@@ -227,7 +227,7 @@ function Gallery({ product }: { product: ProductDetail }) {
                 <img
                   {...imagenOptimizada(image.url, 80)}
                   alt=""
-                  className="size-20 object-cover"
+                  className="size-20 bg-white object-contain"
                 />
               </button>
             </li>

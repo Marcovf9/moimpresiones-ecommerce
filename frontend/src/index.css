@@ -175,4 +175,11 @@ body::before {
 /* Leaflet dibuja su atribución con su propio tipo; la alineamos con el sitio. */
 .leaflet-container {
   font-family: inherit;
+  /* Leaflet numera sus capas y sus controles hasta 1000, muy por encima del
+     encabezado fijo (40) y del botón de WhatsApp (30): al desplazar la página,
+     los botones de zoom y el mapa se dibujaban por encima. Con un contexto de
+     apilamiento propio, esos números quedan puertas adentro. */
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
 }
