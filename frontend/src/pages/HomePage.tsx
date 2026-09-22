@@ -12,17 +12,15 @@ import { ImagenConCarga } from '../components/ImagenConCarga'
 import { ComoTrabajamos } from '../components/ComoTrabajamos'
 import { ComoLlegar } from '../components/ComoLlegar'
 import { useRevelarAlScroll } from '../hooks/useRevelarAlScroll'
+import institucional from '../config/institucional.json'
 
 /**
  * Texto institucional entregado por el cliente ("Quienes somos FINAL.docx").
- * Vive en el frontend porque es copy fijo, no contenido de catalogo.
+ *
+ * <p>Vive en un JSON, y no acá, porque también lo escribe en el HTML el script
+ * que se corre al publicar: es lo primero que lee Google de la portada.
  */
-const ABOUT_PARAGRAPHS = [
-  'Somos una empresa gráfica familiar de Córdoba, Argentina, con más de 30 años de trayectoria en la industria.',
-  'Desde 1994, trabajamos acompañando a empresas, comercios y emprendimientos en el desarrollo de sus proyectos gráficos, combinando experiencia, calidad y atención personalizada.',
-  'A lo largo de los años fuimos creciendo, incorporando tecnología y ampliando nuestras capacidades de producción, sin perder la esencia que nos caracteriza desde el comienzo: el compromiso con cada trabajo y la cercanía con nuestros clientes.',
-  'Hoy seguimos apostando a la industria gráfica, ofreciendo soluciones a medida y cuidando cada etapa del proceso, desde la impresión hasta la terminación final.',
-]
+const { quienesSomos: ABOUT_PARAGRAPHS } = institucional
 
 export function HomePage() {
   const location = useLocation()
