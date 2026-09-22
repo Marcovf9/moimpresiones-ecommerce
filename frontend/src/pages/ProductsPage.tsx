@@ -409,7 +409,9 @@ function BarraDeSeleccion() {
   const elegidos = items.filter((item) => item.productSlug)
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-ink-900/95 backdrop-blur">
+    // Por encima del globo de WhatsApp (z-30): si queda debajo, el globo tapa
+    // el botón de terminar justo cuando hace falta.
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-ink-900/95 backdrop-blur">
       <div className="mx-auto max-w-6xl px-4 py-3 pr-20 sm:px-6 sm:py-4 sm:pr-24">
         {elegidos.length === 0 ? (
           <p className="text-sm text-ink-100">
