@@ -163,6 +163,12 @@ a `main`.
    `frontend`, el build, la vuelta a `index.html` en cada ruta y el sitemap y
    robots servidos desde el backend.
 
+> **Cortes al publicar:** el servicio tiene un disco persistente para los
+> adjuntos, así que Render apaga la versión vieja antes de levantar la nueva:
+> cada despliegue del backend deja la API sin responder unos minutos. Por eso
+> `render.yaml` limita los despliegues a los cambios de `backend/**`; un cambio
+> del frontend solo republica Netlify, que no corta nada.
+
 ### 3. Monitoreo
 
 El backend publica `/actuator/health`, que es lo que consulta Render para saber
