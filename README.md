@@ -1,164 +1,243 @@
-# MO Impresiones — Sitio institucional y catálogo
+# MO Impresiones — print shop website, catalog and admin panel
 
-Sitio web de MO Impresiones, empresa gráfica familiar de Córdoba, Argentina, con más de
-30 años de trayectoria.
+**Live at [moimpresiones.com](https://moimpresiones.com)** · Java 21 · Spring Boot 3.5 · React 19 · PostgreSQL
 
-## Stack
+A production website built for a real client: a family-run print shop in Córdoba, Argentina, in
+business since 1994. It is a public catalog with a quote request flow, plus an admin panel the
+owner uses to manage products, photos, incoming quotes and traffic reports — no developer needed.
 
-| Capa       | Tecnología                                            |
-|------------|-------------------------------------------------------|
-| Backend    | Java 21 · Spring Boot 3.5 · Spring Data JPA · Security |
-| Base datos | PostgreSQL 16 · migraciones con Flyway                 |
-| Frontend   | React 19 · TypeScript · Vite · Tailwind CSS 4          |
+The site is live, serving the business, with its own domain, HTTPS and email notifications.
 
-## Estructura
+![Home page](docs/imagenes/home.png)
+
+> The user interface and the code comments are in Spanish, the language of the client and of the
+> people who use the panel every day. This README is in English.
+
+---
+
+## Table of contents
+
+- [What it does](#what-it-does)
+- [Screenshots](#screenshots)
+- [Architecture](#architecture)
+- [Decisions worth reading](#decisions-worth-reading)
+- [Tech stack](#tech-stack)
+- [Project layout](#project-layout)
+- [Running it locally](#running-it-locally)
+- [Tests](#tests)
+- [Deployment](#deployment)
+
+---
+
+## What it does
+
+### Public site
+
+- **Catalog** of 22 products across 6 categories, and 9 finishing techniques, each with photos and
+  a spec sheet (materials, sizes, minimum runs, available finishes).
+- **Search and filters** by finishing and material, accent-insensitive and typo-tolerant: `comics`
+  finds *Cómics*, `troquelado` finds every product that offers die-cutting.
+- **Multi-product quote requests** with file attachments (PDF, JPG, PNG). Submitting saves the
+  request, emails the owner and opens WhatsApp with the message already written.
+- **FAQ, terms, privacy policy and a map** with the shop location.
+- Responsive down to 360 px, WCAG AA contrast, lazy-loaded images with placeholders, and reveal
+  animations that respect `prefers-reduced-motion`.
+
+### Admin panel (`/admin`)
+
+- **Dashboard** with KPIs, pending tasks, weekly quote volume and most requested products.
+- **Catalog editor**: products, categories, finishings, spec sheets, and photo uploads that can be
+  reordered, so the owner picks which shot is the cover.
+- **Quote inbox** with statuses, notes and secure attachment downloads.
+- **Traffic reports** over a custom date range: visits, unique visitors, most visited pages and most
+  viewed products.
+
+---
+
+## Screenshots
+
+| Catalog | Product detail |
+|---|---|
+| ![Catalog](docs/imagenes/catalogo.png) | ![Product detail](docs/imagenes/producto.png) |
+
+| Quote request | Mobile |
+|---|---|
+| ![Quote request](docs/imagenes/cotizador.png) | <img src="docs/imagenes/movil-catalogo.png" width="320" alt="Mobile catalog"> |
+
+---
+
+## Architecture
 
 ```
-backend/    API REST de catálogo, cotizaciones y panel de administración
-frontend/   Sitio público en React + panel admin
-docker-compose.yml   PostgreSQL para desarrollo local
+                 moimpresiones.com                 api.moimpresiones.com
+                        │                                   │
+              ┌─────────▼─────────┐             ┌───────────▼───────────┐
+              │  React SPA        │   HTTPS     │  Spring Boot REST API │
+              │  (Netlify CDN)    │ ──────────► │  (Render, Docker)     │
+              └───────────────────┘             └───────────┬───────────┘
+                                                            │
+                                    ┌───────────────────────┼───────────────────────┐
+                                    │                       │                       │
+                             ┌──────▼──────┐        ┌───────▼───────┐       ┌───────▼───────┐
+                             │ PostgreSQL  │        │  Cloudinary   │       │  SMTP (Gmail) │
+                             │  + Flyway   │        │ product photos│       │ quote alerts  │
+                             └─────────────┘        └───────────────┘       └───────────────┘
+                                                            │
+                                                    ┌───────▼────────┐
+                                                    │ Persistent disk│
+                                                    │ quote uploads  │
+                                                    └────────────────┘
 ```
 
-## Puesta en marcha
+The backend is a layered Spring Boot application organised by feature (`catalog`, `quote`,
+`analytics`, `dashboard`, `media`, `security`, `seo`, `notificaciones`), not by technical layer, so
+everything one feature needs sits in one package. Storage is behind two interfaces — `MediaStorage`
+for public images and `PrivateFileStorage` for quote attachments — each with a local and a cloud
+implementation, selected by configuration.
 
-1. Levantar la base de datos:
+The frontend is a Vite SPA. The public site and the admin panel are separate route trees, and the
+admin bundle is code-split so visitors never download it.
 
-   ```bash
-   docker compose up -d
-   ```
+---
 
-2. Backend (arranca en `http://localhost:8080`, aplica las migraciones Flyway solo):
+## Decisions worth reading
 
-   ```bash
-   cd backend && ./mvnw spring-boot:run
-   ```
+These are the parts where the interesting trade-offs are.
 
-3. Frontend (arranca en `http://localhost:5173`, con proxy a `/api`):
+**Search that tolerates accents and near misses.** Argentinians type without accents, so exact
+matching silently returned nothing. A generated `search_text` column holds the product's name,
+summary, description, category and its entire spec sheet, lowercased and unaccented via `unaccent`.
+Ranking uses `pg_trgm`'s `word_similarity`, backed by a GIN index. The column is maintained by
+`plpgsql` triggers on both tables that feed it instead of from application code: a derived value
+that depends on two tables becomes stale the first time someone forgets a write path.
 
-   ```bash
-   cd frontend && npm install && npm run dev
-   ```
+**Analytics without cookies, so the site needs no consent banner.** Visitors are counted through a
+salted hash of IP, user agent and the current date. The date makes the identifier rotate daily, so
+it cannot follow anyone over time, and the salt is generated at startup and never persisted, so the
+small IPv4 space cannot be brute-forced against the database. The cost is that unique-visitor
+continuity resets when the server restarts — an acceptable trade for a shop's traffic report.
+Google Analytics and Google Maps were rejected for the same reason; the map uses Leaflet and
+OpenStreetMap tiles.
 
-## Variables de entorno
+**Email alerts that cannot slow down or break a quote.** The API publishes an event and a
+`@TransactionalEventListener(AFTER_COMMIT)` sends the email on an `@Async` thread. The customer's
+request is already committed and the response already sent, so a slow or unreachable SMTP server
+delays nothing and loses nothing. With no `MAIL_HOST` configured, the notifier logs and returns
+instead of failing.
 
-| Variable         | Default                                        | Descripción                          |
-|------------------|------------------------------------------------|--------------------------------------|
-| `DB_URL`         | `jdbc:postgresql://localhost:5432/moimpresiones` | Conexión a PostgreSQL              |
-| `DB_USER`        | `moimpresiones`                                | Usuario de base de datos             |
-| `DB_PASSWORD`    | `moimpresiones`                                | Contraseña de base de datos          |
-| `CORS_ORIGINS`   | `http://localhost:5173`                        | Orígenes permitidos, separados por coma |
-| `MEDIA_PATH`     | `./uploads`                                    | Carpeta de imágenes subidas          |
-| `JWT_SECRET`     | valor de desarrollo                            | **Obligatorio en producción** (mín. 32 caracteres) |
-| `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` | vacío | SMTP para avisar cotizaciones nuevas. Sin `MAIL_HOST`, apagado |
-| `NOTIFICACIONES_DESTINO` | `contacto@moimpresiones.com` | Quién recibe el aviso |
-| `MEDIA_PROVIDER` | `local`                                        | `local` (disco) o `cloudinary` |
-| `CLOUDINARY_URL` | vacío                                          | `cloudinary://<key>:<secret>@wadqifnu`. Obligatorio si `MEDIA_PROVIDER=cloudinary` |
-| `ADMIN_USERNAME` | `admin`                                        | Usuario inicial del panel            |
-| `ADMIN_PASSWORD` | se genera al azar                              | Contraseña inicial del panel         |
-| `WHATSAPP_NUMBER`| vacío                                          | Número internacional sin signos (ej. `5493511234567`) |
-| `INSTAGRAM_URL`  | vacío                                          | Perfil de Instagram                  |
-| `CONTACT_EMAIL`  | vacío                                          | Mail de contacto                     |
-| `SITE_URL`       | vacío                                          | Dominio del sitio, sin barra final. Sin esto `/sitemap.xml` devuelve 404 |
+**Private attachments, because the CDN refused to serve them.** Product photos go to Cloudinary with
+per-device transformations. Customer attachments do not: this Cloudinary account blocks PDF
+delivery, and quote files should not be publicly addressable anyway. They are written to a
+persistent disk and served only through an authenticated admin endpoint that streams them.
 
-## Panel de administración
+**An admin password that can actually be guessed, so it is rate-limited.** JWT auth, BCrypt hashes,
+and login throttling counted per username *and* per IP at once: per username alone lets anyone lock
+the owner out on purpose; per IP alone is bypassed with a handful of addresses.
 
-La primera vez que arranca el backend, si la tabla `admin_users` está vacía se crea
-un usuario inicial. Si no definiste `ADMIN_PASSWORD`, la contraseña se genera al azar
-y se imprime **una sola vez** en el log de arranque.
+**Photos shipped as a migration.** Deploying to a fresh database revealed that the catalog photos
+only existed in the development database — production would have come up with 22 products and no
+images. Migration `V11` inserts the Cloudinary URLs, matched by slug (ids differ between databases),
+and only where no image exists yet, so it never overwrites what the owner changed from the panel.
 
-Todo lo que escribe vive bajo `/api/admin/**` y exige el token que devuelve
-`POST /api/auth/login`, enviado como `Authorization: Bearer <token>`.
+**Accessible brand colors.** The client's magenta (`#f80093`) fails contrast against white at 3.1:1.
+The palette keeps it for logos, CMYK bars and filled buttons, and uses a darker tone for text on
+light backgrounds and a lighter one for small text on the dark paper background, all measured
+against the actual background luminance rather than assumed.
 
-## Fotos: disco local o Cloudinary
+---
 
-El backend guarda las imágenes del panel donde diga `app.media-provider`:
+## Tech stack
 
-- **`local`** (por defecto) — disco del servidor. Sirve para desarrollar.
-  **No usar en producción**: en Railway, Render o Fly el disco es efímero y
-  cada despliegue borraría todas las fotos que subió el cliente.
-- **`cloudinary`** — CDN, con las imágenes optimizadas según el dispositivo.
+| Layer | Choice |
+|---|---|
+| Backend | Java 21, Spring Boot 3.5, Spring Data JPA, Spring Security, Bean Validation |
+| Database | PostgreSQL 16+, Flyway migrations (11), `unaccent` + `pg_trgm` |
+| Auth | JWT (jjwt), BCrypt, login throttling |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, React Router 7 |
+| Media | Cloudinary (public images), persistent disk (private attachments) |
+| Maps | Leaflet + OpenStreetMap, lazy-loaded |
+| Email | Spring Mail over SMTP, async after commit |
+| Hosting | Render (API + PostgreSQL, Docker), Netlify (SPA) |
+| Tests | JUnit 5 |
 
-Para usar Cloudinary, copiá `.env.ejemplo` como `.env`, completá `CLOUDINARY_URL`
-y arrancá el backend pasándole el archivo:
+Roughly 5,700 lines of Java across 87 classes and 7,000 lines of TypeScript across 61 files.
+
+---
+
+## Project layout
+
+```
+backend/                 Spring Boot REST API
+  src/main/java/com/moimpresiones/api/
+    catalog/             products, categories, search and filters
+    quote/               quote requests, attachments, WhatsApp message builder
+    analytics/           cookieless page views and reports
+    dashboard/           admin dashboard aggregation
+    media/               storage abstractions (Cloudinary / local)
+    security/            JWT, login throttling, password policy
+    notificaciones/      email alerts for new quotes
+    seo/                 sitemap.xml and robots.txt from the live catalog
+  src/main/resources/db/migration/   Flyway V1–V11
+frontend/                React SPA
+  src/pages/             public pages
+  src/admin/             admin panel (code-split bundle)
+  src/components/        shared UI
+  src/hooks/             data fetching, page metadata, scroll reveal
+docs/                    screenshots and the Spanish README
+render.yaml              Render blueprint: API + database + disk
+netlify.toml             build, SPA redirects, security headers
+```
+
+---
+
+## Running it locally
+
+Requires Docker and Node 20+. A JDK is only needed if you run the backend outside Docker.
 
 ```bash
-docker run -d --name moimpresiones-api \
-  --network moimpresiones-ecommerce_default -p 8080:8080 \
-  --env-file .env \
-  -v "$PWD/backend":/app -v moimpresiones-m2:/root/.m2 -w /app \
-  -e DB_URL=jdbc:postgresql://db:5432/moimpresiones \
-  maven:3.9-eclipse-temurin-21 mvn -B spring-boot:run
+docker compose up -d                      # PostgreSQL on 5432
+cd backend && ./mvnw spring-boot:run      # API on 8080, applies migrations
+cd frontend && npm install && npm run dev # site on 5173, proxies /api
 ```
 
-Para migrar las fotos que ya están en disco, con Cloudinary activo:
+The panel is at `/admin`. On first start the API creates the admin user from `ADMIN_USERNAME` and
+`ADMIN_PASSWORD`; leave them unset and it generates a random password and prints it once in the log.
+
+Configuration is environment-driven — database, JWT secret, CORS origins, storage provider,
+Cloudinary credentials, SMTP and contact details. See [`.env.ejemplo`](.env.ejemplo) and the
+[Spanish README](docs/README.es.md) for the full table.
+
+---
+
+## Tests
 
 ```bash
-python3 scripts/importar_fotos.py ~/Downloads/moimpresiones-fotos
+cd backend && ./mvnw test
 ```
 
-El script reemplaza las imágenes de cada producto en vez de sumarlas, así que
-se puede correr las veces que haga falta sin duplicar nada.
+29 JUnit tests covering the pieces where a mistake is silent or expensive: the WhatsApp message
+builder, the quote notification email, login throttling, the password policy, Cloudinary URL
+handling and text normalisation. The production Docker image runs them during the build, so a
+failing test never gets deployed.
 
-## Antes de publicar
+---
 
-Hay datos que el código deja explícitamente en blanco en lugar de inventarlos:
+## Deployment
 
-1. **`frontend/src/config/empresa.ts`** — razón social, CUIT, domicilio, horario y
-   dominio. Mientras falten razón social y CUIT, las páginas legales muestran un
-   aviso visible de que están incompletas.
-2. **Variables de entorno** — `WHATSAPP_NUMBER`, `INSTAGRAM_URL`, `CONTACT_EMAIL`,
-   `SITE_URL`, y un `JWT_SECRET` propio de al menos 32 caracteres.
-3. **Fotos** de productos y terminaciones: las actuales vienen en la migración
-   `V11__fotos_del_catalogo.sql`; las nuevas se cargan desde el panel.
+`render.yaml` is a Render blueprint: one click creates the Dockerized API, a PostgreSQL instance and
+a 1 GB persistent disk for attachments, already wired together, with the JWT secret generated by
+Render and every secret entered in the dashboard rather than committed. `netlify.toml` builds the
+SPA, keeps deep links working, proxies `sitemap.xml` and `robots.txt` from the API, and sets
+security and cache headers. DNS stays at the registrar so the client's Google Workspace email is
+never touched.
 
-Los términos y condiciones están redactados para una imprenta, pero **conviene que
-los revise un abogado** antes de publicarlos.
+Step-by-step instructions are in the [Spanish README](docs/README.es.md#despliegue).
 
-## Despliegue
+---
 
-Backend y base en **Render**, frontend en **Netlify**. La base es PostgreSQL
-en Render y no TiDB: el backend usa funciones propias de PostgreSQL (búsqueda
-sin acentos con `unaccent`, similitud con `pg_trgm`, triggers en plpgsql) que
-TiDB, compatible con MySQL, no tiene.
+## About this project
 
-Producción sale de `main`: antes del primer despliegue hay que llevar `develop`
-a `main`.
+Built end to end — requirements gathered from the client, database design, API, frontend, admin
+panel, deployment, domain and email — as a working site for a real business rather than a demo.
 
-### 1. Render (backend + base)
-
-1. En Render: **New → Blueprint** y elegir este repositorio. Lee `render.yaml`
-   y crea el servicio `moimpresiones-api`, la base `moimpresiones-db` y un disco
-   de 1 GB para los adjuntos, ya conectados entre sí. `JWT_SECRET` lo genera
-   Render solo.
-2. Completar las variables que pide:
-   - `ADMIN_PASSWORD` — la clave del panel. Larga y que no se use en otro lado.
-   - `CLOUDINARY_URL` — la misma del `.env` local.
-   - `CORS_ORIGINS` — la dirección de Netlify y el dominio propio, separados
-     por coma: `https://moimpresiones.netlify.app,https://moimpresiones.com`.
-   - `SITE_URL` — el dominio público, sin barra final.
-   - `MAIL_*` y `NOTIFICACIONES_REMITENTE` — opcionales; sin `MAIL_HOST` no
-     se mandan avisos por mail y el resto funciona igual.
-3. Al arrancar, Flyway crea las tablas y carga el catálogo con sus fotos (que
-   ya están en Cloudinary). El usuario del panel se crea con `ADMIN_PASSWORD`
-   la primera vez: cambiar esa variable después no cambia la clave, para eso
-   está la opción del panel.
-
-### 2. Netlify (frontend)
-
-1. Si Render asignó una dirección distinta de `moimpresiones-api.onrender.com`,
-   reemplazarla en `netlify.toml` (aparece tres veces).
-2. En Netlify: **Add new site → Import an existing project** con este
-   repositorio y la rama `main`. El resto lo toma de `netlify.toml`: la carpeta
-   `frontend`, el build, la vuelta a `index.html` en cada ruta y el sitemap y
-   robots servidos desde el backend.
-
-### 3. Dominio
-
-Apuntar el dominio a Netlify (Domain management) y agregarlo a `CORS_ORIGINS`
-en Render.
-
-## Flujo de trabajo con Git
-
-- `main` — producción. Nunca se pushea directo.
-- `develop` — rama de integración. Todo llega acá vía merge.
-- `feature/<tarea>` — una rama por tarea, sale de `develop` y vuelve a `develop`.
+**Marco Vergara** · [GitHub](https://github.com/Marcovf9)
