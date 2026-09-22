@@ -7,6 +7,7 @@ import { Modal } from '../components/Modal'
 import { ErrorState, PageHeader } from '../components/PageChrome'
 import type React from 'react'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { metaDe } from '../config/paginas'
 import { colorDeRubro } from '../components/BarraCMYK'
 import { useRevelarAlScroll } from '../hooks/useRevelarAlScroll'
 import { SkeletonTerminaciones } from '../components/Skeletons'
@@ -40,12 +41,7 @@ export function FinishingsPage() {
     if (pedida) setSearchParams({}, { replace: true })
   }
 
-  usePageMeta({
-    title: 'Terminaciones',
-    description:
-      'Plastificado OPP, barniz UV, UV sectorizado, hot stamping, troquelado, cuño en seco, plegado y más. Los acabados que distinguen una pieza impresa.',
-    path: '/terminaciones',
-  })
+  usePageMeta(metaDe('/terminaciones'))
 
   if (loading) return <SkeletonTerminaciones />
   if (error) return <ErrorState message={error} />

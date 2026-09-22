@@ -6,6 +6,7 @@ import { useApi } from '../hooks/useApi'
 import { ArrowRightIcon, ChevronDownIcon } from '../components/Icons'
 import { PageHeader, ErrorState } from '../components/PageChrome'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { metaDe } from '../config/paginas'
 import { SkeletonListadoProductos } from '../components/Skeletons'
 import { ImagenConCarga } from '../components/ImagenConCarga'
 import { FiltrosCatalogo, type FiltrosElegidos } from '../components/FiltrosCatalogo'
@@ -31,12 +32,7 @@ export function ProductsPage() {
   // elige desde el menú del celular.
   const rubroElegido = searchParams.get('rubro')
 
-  usePageMeta({
-    title: 'Productos',
-    description:
-      'Carpetas, tarjetas, folletos, catálogos, libros, talonarios, packaging y regalos empresariales. Materiales, formatos y terminaciones de cada producto.',
-    path: '/productos',
-  })
+  usePageMeta(metaDe('/productos'))
 
   if (loading) return <SkeletonListadoProductos />
   if (error) return <ErrorState message={error} />
