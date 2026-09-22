@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <!-- Google toma el icono de los resultados en multiplos de 48 px. -->
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <!-- La foto de portada es lo primero que se ve y la pide React recien
@@ -53,6 +55,42 @@
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="MO Impresiones, imprenta en Córdoba" />
     <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" id="datos-estructurados-negocio">
+      {
+        "@context": "https://schema.org",
+        "@type": "PrintingService",
+        "name": "MO Impresiones",
+        "description": "Empresa gráfica familiar de Córdoba, Argentina, con más de 30 años de trayectoria en impresión offset, packaging, editorial e impresos numerados.",
+        "url": "https://moimpresiones.com",
+        "logo": "https://moimpresiones.com/imagenes/logo.webp",
+        "image": "https://moimpresiones.com/imagenes/og.jpg",
+        "foundingDate": "1994",
+        "telephone": "+5493516211435",
+        "email": "contacto@moimpresiones.com",
+        "sameAs": ["https://instagram.com/mo.impresiones"],
+        "areaServed": { "@type": "Country", "name": "Argentina" },
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "José Javier Díaz 50",
+          "addressLocality": "Córdoba",
+          "addressRegion": "Córdoba",
+          "addressCountry": "AR"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": -31.4453068,
+          "longitude": -64.1974441
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "08:00",
+            "closes": "16:00"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

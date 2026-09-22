@@ -83,7 +83,7 @@ export function FinishingsPage() {
                     ancho={480}
                     alt={finishing.name}
                     contenedorClassName="aspect-[4/3] w-full"
-                    className="size-full object-cover transition duration-500 group-hover:scale-105"
+                    className="size-full bg-white object-contain transition duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <div className="grid aspect-[4/3] place-items-center bg-ink-900 text-ink-300">
@@ -112,7 +112,7 @@ export function FinishingsPage() {
               <img
                 {...imagenOptimizada(selected.imageUrl, 900)}
                 alt={selected.name}
-                className="mb-6 aspect-[16/9] w-full rounded-xl object-cover"
+                className="mb-6 max-h-[60vh] w-full rounded-xl bg-white object-contain"
               />
             )}
             <p className="text-lg leading-relaxed text-ink-700">{selected.description}</p>
