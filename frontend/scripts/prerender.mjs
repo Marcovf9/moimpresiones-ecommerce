@@ -139,10 +139,13 @@ try {
 
 for (const destino of destinos) {
   const html = armarHtml(base, destino)
-  // La portada es dist/index.html; el resto, una carpeta con su index.html.
-  const salida = destino.ruta === '/' ? DIST : join(DIST, destino.ruta)
-  await mkdir(salida, { recursive: true })
-  await writeFile(join(salida, 'index.html'), html)
+  // Un archivo plano (productos.html) y no una carpeta con index.html: con
+  // carpeta, Netlify responde /productos con un 301 a /productos/, y el
+  // canonical quedaria apuntando a una direccion que redirige. Asi la
+  // direccion que se publica es la misma que se sirve.
+  const salida = destino.ruta === '/' ? join(DIST, 'index.html') : join(DIST, `${destino.ruta}.html`)
+  await mkdir(dirname(salida), { recursive: true })
+  await writeFile(salida, html)
 }
 
 console.log(`[prerender] ${destinos.length} direcciones con su propio HTML`)

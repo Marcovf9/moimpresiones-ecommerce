@@ -147,6 +147,16 @@ only existed in the development database — production would have come up with 
 images. Migration `V11` inserts the Cloudinary URLs, matched by slug (ids differ between databases),
 and only where no image exists yet, so it never overwrites what the owner changed from the panel.
 
+**One HTML file per route, so a single-page app can be indexed.** The server returned the same
+`index.html` for every URL, and that file carried the home page's title and canonical link. React
+rewrites them on load, but a crawler's first pass does not run JavaScript: Search Console reported
+`/productos` as a duplicate of the home page and refused to index it, and sharing a product on
+WhatsApp showed the home preview. A post-build script now writes one HTML file per route — 29 of
+them — with its own title, description, canonical and share image, products included. It is not
+server-side rendering: React still builds the body, and only the head differs. The page copy lives
+in one JSON that both the pages and the script read, because the same text kept in two places
+drifts apart.
+
 **Accessible brand colors.** The client's magenta (`#f80093`) fails contrast against white at 3.1:1.
 The palette keeps it for logos, CMYK bars and filled buttons, and uses a darker tone for text on
 light backgrounds and a lighter one for small text on the dark paper background, all measured

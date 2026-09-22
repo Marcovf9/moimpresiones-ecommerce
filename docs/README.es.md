@@ -148,6 +148,12 @@ a `main`.
    la primera vez: cambiar esa variable después no cambia la clave, para eso
    está la opción del panel.
 
+> **Al publicar el frontend** se genera un HTML por dirección
+> (`scripts/prerender.mjs`), con el título, la descripción y el canonical de
+> cada pantalla. Para eso consulta la API: si no responde, se generan solo las
+> pantallas fijas y el build no falla. Los textos salen de
+> `src/config/paginas.json`, que es el mismo que usan las páginas.
+
 ### 2. Netlify (frontend)
 
 1. Si Render asignó una dirección distinta de `moimpresiones-api.onrender.com`,
