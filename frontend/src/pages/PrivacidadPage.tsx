@@ -16,7 +16,7 @@ export function PrivacidadPage() {
   const domicilio = domicilioCompleto()
 
   return (
-    <LegalPage title="Política de privacidad" updatedAt="1 de septiembre de 2026">
+    <LegalPage title="Política de privacidad" updatedAt="22 de septiembre de 2026">
       <LegalSection title="1. Responsable de los datos">
         <p>
           {EMPRESA.nombreComercial}
