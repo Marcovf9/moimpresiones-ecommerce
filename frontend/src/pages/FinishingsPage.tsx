@@ -93,7 +93,7 @@ export function FinishingsPage() {
                   </div>
                 )}
               </div>
-              <h2 className="mt-2 font-display text-xs leading-snug font-medium text-ink-900 transition group-hover:text-brand-600 sm:mt-3 sm:text-lg">
+              <h2 className="mt-2 font-display text-xs leading-snug font-medium text-white transition group-hover:text-brand-300 sm:mt-3 sm:text-lg">
                 {finishing.name}
               </h2>
             </button>

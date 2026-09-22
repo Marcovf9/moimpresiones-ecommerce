@@ -35,13 +35,13 @@ const PASOS = [
 
 export function ComoTrabajamos() {
   return (
-    <section className="border-t border-ink-100 py-14 sm:py-24">
+    <section className="border-t border-white/10 py-14 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
         <BarraCMYK className="max-w-24" />
-        <h2 className="mt-3 font-display text-3xl font-semibold text-ink-900 sm:text-4xl">
+        <h2 className="mt-3 font-display text-3xl font-semibold text-white sm:text-4xl">
           Cómo trabajamos
         </h2>
-        <p className="mt-2 max-w-2xl text-ink-500">
+        <p className="mt-2 max-w-2xl text-ink-300">
           De la consulta a la entrega, sin vueltas.
         </p>
 
@@ -51,7 +51,7 @@ export function ComoTrabajamos() {
               key={paso.titulo}
               data-revelar
               data-retraso={String((indice % 3) + 1)}
-              className="rounded-2xl border border-ink-100 bg-white p-5"
+              className="rounded-2xl border border-white/10 bg-white p-5"
             >
               <span className="font-display text-3xl font-semibold text-ink-100">
                 {String(indice + 1).padStart(2, '0')}
@@ -67,7 +67,7 @@ export function ComoTrabajamos() {
         <div className="mt-8">
           <Link
             to="/preguntas-frecuentes"
-            className="inline-flex items-center gap-2 text-sm font-medium text-brand-600 transition hover:text-brand-700"
+            className="inline-flex items-center gap-2 text-sm font-medium text-brand-300 transition hover:text-white"
           >
             Ver preguntas frecuentes
             <ArrowRightIcon className="size-4" />

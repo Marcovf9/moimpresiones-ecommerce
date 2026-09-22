@@ -109,7 +109,7 @@ export function QuotePage() {
       />
 
       <form onSubmit={handleSubmit} className="mx-auto mt-7 max-w-3xl sm:mt-10 space-y-6 px-6">
-        <section className="rounded-2xl border border-ink-100 bg-white p-6">
+        <section className="rounded-2xl border border-white/10 bg-white p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-display text-xl font-semibold text-ink-900">
               Tu pedido
@@ -219,7 +219,7 @@ export function QuotePage() {
 
         <Adjuntos adjuntos={adjuntos} onCambio={setAdjuntos} />
 
-        <section className="rounded-2xl border border-ink-100 bg-white p-6">
+        <section className="rounded-2xl border border-white/10 bg-white p-6">
           <h2 className="font-display text-xl font-semibold text-ink-900">Tus datos</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <Campo
@@ -266,7 +266,7 @@ export function QuotePage() {
         </section>
 
         {errorGeneral && (
-          <p role="alert" className="rounded-lg bg-brand-500/10 px-4 py-3 text-sm text-brand-600">
+          <p role="alert" className="rounded-lg bg-white px-4 py-3 text-sm text-brand-600">
             {errorGeneral}
           </p>
         )}
@@ -274,12 +274,12 @@ export function QuotePage() {
         <button
           type="submit"
           disabled={estado.kind === 'sending' || sinProductos}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-900 px-8 py-4 font-medium text-white transition hover:bg-ink-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-8 py-4 font-medium text-ink-900 transition hover:bg-ink-100 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {estado.kind === 'sending' ? 'Enviando...' : 'Pedir presupuesto'}
         </button>
         {sinProductos && (
-          <p className="text-center text-sm text-ink-500">
+          <p className="text-center text-sm text-ink-300">
             Agregá al menos un producto para poder enviar.
           </p>
         )}
@@ -384,7 +384,7 @@ function Adjuntos({
   }
 
   return (
-    <section className="rounded-2xl border border-ink-100 bg-white p-6">
+    <section className="rounded-2xl border border-white/10 bg-white p-6">
       <h2 className="font-display text-xl font-semibold text-ink-900">
         Archivos <span className="text-sm font-normal text-ink-500">(opcional)</span>
       </h2>
@@ -456,8 +456,8 @@ function PanelEnviado({ resultado }: { resultado: QuoteCreated }) {
   return (
     <div className="grid min-h-[70dvh] place-items-center px-6 pt-24 text-center">
       <div className="max-w-md">
-        <h1 className="font-display text-3xl font-semibold text-ink-900">¡Recibimos tu pedido!</h1>
-        <p className="mt-3 text-ink-500">
+        <h1 className="font-display text-3xl font-semibold text-white">¡Recibimos tu pedido!</h1>
+        <p className="mt-3 text-ink-100">
           Ya lo tenemos registrado. Para que llegue más rápido, mandanos también el mensaje por
           WhatsApp: se abre con todo lo que cargaste ya escrito.
         </p>
@@ -473,11 +473,11 @@ function PanelEnviado({ resultado }: { resultado: QuoteCreated }) {
             Enviar por WhatsApp
           </a>
         ) : (
-          <p className="mt-8 text-ink-500">Te vamos a estar contactando a la brevedad.</p>
+          <p className="mt-8 text-ink-100">Te vamos a estar contactando a la brevedad.</p>
         )}
 
         <div className="mt-6">
-          <Link to="/productos" className="text-sm text-ink-500 underline hover:text-ink-900">
+          <Link to="/productos" className="text-sm text-ink-300 underline hover:text-white">
             Seguir viendo productos
           </Link>
         </div>

@@ -102,11 +102,11 @@ function ResultadosFiltrados({ filtros }: { filtros: FiltrosElegidos }) {
 
   return (
     <section aria-live="polite">
-      <h2 className="mb-4 font-display text-lg font-semibold text-ink-900">
+      <h2 className="mb-4 font-display text-lg font-semibold text-white">
         {loading ? 'Buscando...' : `${data?.length ?? 0} ${data?.length === 1 ? 'producto' : 'productos'}`}
       </h2>
       {!loading && data && data.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-ink-300 px-6 py-8 text-center text-ink-500">
+        <p className="rounded-xl border border-dashed border-white/30 px-6 py-8 text-center text-ink-300">
           No hay productos con esa combinación. Probá con un solo filtro.
         </p>
       ) : (
@@ -122,13 +122,13 @@ function RubroSolo({ rubro, onVerTodos }: { rubro: Category; onVerTodos: () => v
     <section>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-2xl font-semibold text-ink-900">{rubro.name}</h2>
-          {rubro.description && <p className="mt-1 max-w-2xl text-ink-500">{rubro.description}</p>}
+          <h2 className="font-display text-2xl font-semibold text-white">{rubro.name}</h2>
+          {rubro.description && <p className="mt-1 max-w-2xl text-ink-300">{rubro.description}</p>}
         </div>
         <button
           type="button"
           onClick={onVerTodos}
-          className="rounded-lg border border-ink-300 px-3 py-2 text-sm font-medium text-ink-900 transition hover:border-ink-900"
+          className="rounded-lg border border-white/40 px-3 py-2 text-sm font-medium text-white transition hover:bg-white hover:text-ink-900"
         >
           Ver todos los rubros
         </button>
@@ -162,8 +162,8 @@ function AcordeonMovil({ categories }: { categories: Category[] }) {
               style={{ borderLeftColor: `var(--color-${color})` }}
               className={`flex w-full items-center justify-between gap-4 rounded-xl border border-l-4 px-4 py-3.5 text-left transition sm:px-5 sm:py-4 ${
                 estaAbierto
-                  ? 'border-ink-900 bg-ink-900 text-white'
-                  : 'border-ink-100 bg-white text-ink-900'
+                  ? 'border-white/30 bg-ink-900 text-white'
+                  : 'border-white/10 bg-white text-ink-900'
               }`}
             >
               <span>
@@ -181,7 +181,7 @@ function AcordeonMovil({ categories }: { categories: Category[] }) {
             {estaAbierto && (
               <div id={panelId} className="mt-2">
                 {category.description && (
-                  <p className="mb-3 px-1 text-sm text-ink-500">{category.description}</p>
+                  <p className="mb-3 px-1 text-sm text-ink-300">{category.description}</p>
                 )}
                 <ProductGrid products={category.products} />
               </div>
@@ -216,8 +216,8 @@ function VistaEscritorio({ categories }: { categories: Category[] }) {
                 style={{ borderLeftColor: `var(--color-${color})` }}
                 className={`flex w-full items-center justify-between gap-4 rounded-xl border border-l-4 px-4 py-3.5 text-left transition sm:px-5 sm:py-4 ${
                   isActive
-                    ? 'border-ink-900 bg-ink-900 text-white'
-                    : 'border-ink-100 bg-white text-ink-900 hover:border-ink-300'
+                    ? 'border-white/30 bg-ink-900 text-white'
+                    : 'border-white/10 bg-white text-ink-900 hover:border-ink-300'
                 }`}
               >
                 <span>
@@ -233,7 +233,7 @@ function VistaEscritorio({ categories }: { categories: Category[] }) {
         })}
       </ul>
 
-      <div className="rounded-2xl border border-ink-100 bg-white p-8">
+      <div className="rounded-2xl border border-white/10 bg-white p-8">
         <h2 className="font-display text-2xl font-semibold text-ink-900">{active.name}</h2>
         {active.description && <p className="mt-2 max-w-2xl text-ink-500">{active.description}</p>}
         <div className="mt-6">

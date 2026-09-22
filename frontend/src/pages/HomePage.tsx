@@ -47,34 +47,34 @@ export function HomePage() {
 
       <section id="quienes-somos" data-revelar className="scroll-mt-20 py-14 sm:py-28">
         <div className="mx-auto max-w-3xl px-6">
-          <p className="font-display text-xs tracking-[0.3em] text-brand-600 uppercase sm:text-sm">
+          <p className="font-display text-xs tracking-[0.3em] text-brand-300 uppercase sm:text-sm">
             Nuestra historia
           </p>
-          <h2 className="mt-2 font-display text-3xl font-semibold text-ink-900 sm:mt-3 sm:text-5xl">
+          <h2 className="mt-2 font-display text-3xl font-semibold text-white sm:mt-3 sm:text-5xl">
             ¿Quiénes somos?
           </h2>
 
-          <div className="mt-6 space-y-4 leading-relaxed text-ink-700 sm:mt-8 sm:space-y-5 sm:text-lg">
+          <div className="mt-6 space-y-4 leading-relaxed text-ink-100 sm:mt-8 sm:space-y-5 sm:text-lg">
             {ABOUT_PARAGRAPHS.map((paragraph) => (
               <p key={paragraph.slice(0, 40)}>{paragraph}</p>
             ))}
           </div>
 
-          <p className="mt-8 border-l-4 border-brand-500 pl-5 font-display text-xl text-ink-900 italic sm:mt-10 sm:pl-6 sm:text-2xl">
+          <p className="mt-8 border-l-4 border-brand-500 pl-5 font-display text-xl text-white italic sm:mt-10 sm:pl-6 sm:text-2xl">
             Más de tres décadas imprimiendo ideas y construyendo relaciones.
           </p>
 
           <div className="mt-9 flex flex-wrap gap-3 sm:mt-12 sm:gap-4">
             <Link
               to="/productos"
-              className="inline-flex items-center gap-2 rounded-full bg-ink-900 px-7 py-3 font-medium text-white transition hover:bg-ink-700"
+              className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 font-medium text-ink-900 transition hover:bg-ink-100"
             >
               Ver productos
               <ArrowRightIcon />
             </Link>
             <Link
               to="/cotiza"
-              className="inline-flex items-center gap-2 rounded-full border border-ink-300 px-7 py-3 font-medium text-ink-900 transition hover:border-ink-900"
+              className="inline-flex items-center gap-2 rounded-full border border-white/40 px-7 py-3 font-medium text-white transition hover:bg-white hover:text-ink-900"
             >
               Cotizá tu proyecto
             </Link>
@@ -101,20 +101,20 @@ function RubrosDestacados() {
   if (!categories || categories.length === 0) return null
 
   return (
-    <section className="border-t border-ink-100 py-14 sm:py-24">
+    <section className="border-t border-white/10 py-14 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
         <BarraCMYK className="max-w-24" />
-        <h2 className="mt-3 font-display text-3xl font-semibold text-ink-900 sm:text-4xl">
+        <h2 className="mt-3 font-display text-3xl font-semibold text-white sm:text-4xl">
           Qué imprimimos
         </h2>
-        <p className="mt-2 max-w-2xl text-ink-500">
+        <p className="mt-2 max-w-2xl text-ink-300">
           Seis familias de productos, cada una con sus materiales, formatos y terminaciones.
         </p>
 
         {/* Todas las fotos del catálogo son trabajos que salieron de esta
             imprenta, y hasta ahora nada lo decía: el visitante las tomaba por
             fotos de catálogo genéricas. Decirlo cambia cómo se leen. */}
-        <p className="mt-4 flex w-fit max-w-full items-center gap-2.5 rounded-full bg-ink-900 px-4 py-2.5 text-sm text-white">
+        <p className="mt-4 flex w-fit max-w-full items-center gap-2.5 rounded-full border border-white/15 bg-ink-900/80 px-4 py-2.5 text-sm text-white">
           {/* La barra va envuelta: por dentro usa w-full, así que pasarle un
               ancho por className no alcanza para acotarla. */}
           <span className="w-7 shrink-0">
@@ -130,7 +130,7 @@ function RubrosDestacados() {
               <li key={category.slug} data-revelar data-retraso={String((indice % 3) + 1)}>
                 <Link
                   to={`/productos?rubro=${encodeURIComponent(category.slug)}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white transition duration-300 hover:-translate-y-1 hover:border-ink-900 hover:shadow-lg"
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white transition duration-300 hover:-translate-y-1 hover:border-white hover:shadow-lg"
                 >
                   <ImagenConCarga
                     url={portada}
