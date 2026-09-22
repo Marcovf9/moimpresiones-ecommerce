@@ -1,5 +1,6 @@
 package com.moimpresiones.api.analytics;
 
+import com.moimpresiones.api.common.DireccionIp;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.time.LocalDate;
@@ -42,7 +43,7 @@ public class AnalyticsService {
             return;
         }
 
-        String visitante = hasher.hash(direccionDe(http), http.getHeader("User-Agent"),
+        String visitante = hasher.hash(DireccionIp.de(http), http.getHeader("User-Agent"),
                 LocalDate.now(CORDOBA));
 
         if (superaElTope(visitante)) {
@@ -92,12 +93,4 @@ public class AnalyticsService {
         }
     }
 
-    /** En produccion la IP real llega en X-Forwarded-For, no en la conexion. */
-    private static String direccionDe(HttpServletRequest http) {
-        String reenviada = http.getHeader("X-Forwarded-For");
-        if (reenviada != null && !reenviada.isBlank()) {
-            return reenviada.split(",")[0].trim();
-        }
-        return http.getRemoteAddr();
-    }
 }

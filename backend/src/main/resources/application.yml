@@ -90,6 +90,19 @@ app:
     # 2 h: si alguien roba el token, la ventana de uso es corta.
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
 
+# Chequeo de salud para Render y para el monitoreo externo. Solo se publica
+# /actuator/health, sin detalles: el estado interno no es informacion publica.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+
 logging:
   level:
     com.moimpresiones.api: INFO

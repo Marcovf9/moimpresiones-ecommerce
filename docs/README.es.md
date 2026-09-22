@@ -155,7 +155,20 @@ a `main`.
    `frontend`, el build, la vuelta a `index.html` en cada ruta y el sitemap y
    robots servidos desde el backend.
 
-### 3. Dominio
+### 3. Monitoreo
+
+El backend publica `/actuator/health`, que es lo que consulta Render para saber
+si el servicio está sano (revisa también la base). Para enterarse de una caída
+sin estar mirando, conviene un chequeo externo gratuito —por ejemplo
+[UptimeRobot](https://uptimerobot.com)— apuntando a:
+
+```
+https://api.moimpresiones.com/actuator/health
+```
+
+Cada 5 minutos, con aviso por mail a `contacto@moimpresiones.com`.
+
+### 4. Dominio
 
 Apuntar el dominio a Netlify (Domain management) y agregarlo a `CORS_ORIGINS`
 en Render.
