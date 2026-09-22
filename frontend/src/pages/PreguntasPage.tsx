@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { metaDe } from '../config/paginas'
 import { PageHeader } from '../components/PageChrome'
 import { ChevronDownIcon } from '../components/Icons'
 import { useContactInfo } from '../hooks/useContactInfo'
@@ -157,12 +158,7 @@ const PREGUNTAS: Pregunta[] = [
 export function PreguntasPage() {
   const contact = useContactInfo()
 
-  usePageMeta({
-    title: 'Preguntas frecuentes',
-    description:
-      'Cantidades mínimas, precios, formas de pago, terminaciones y archivos. Las dudas más comunes antes de pedir un presupuesto a MO Impresiones.',
-    path: '/preguntas-frecuentes',
-  })
+  usePageMeta(metaDe('/preguntas-frecuentes'))
 
   return (
     <div className="pt-20 pb-14 sm:pt-24 sm:pb-20">

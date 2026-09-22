@@ -1,15 +1,11 @@
 import { Link } from 'react-router-dom'
 import { EMPRESA, domicilioCompleto, identificacionFiscal } from '../config/empresa'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { metaDe } from '../config/paginas'
 import { LegalPage, LegalSection } from '../components/LegalPage'
 
 export function TerminosPage() {
-  usePageMeta({
-    title: 'Términos y condiciones',
-    description:
-      'Condiciones de uso del sitio de MO Impresiones y del servicio de solicitud de presupuestos.',
-    path: '/terminos',
-  })
+  usePageMeta(metaDe('/terminos'))
 
   const fiscal = identificacionFiscal()
   const domicilio = domicilioCompleto()
