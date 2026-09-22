@@ -1,0 +1,93 @@
+# Blueprint de Render: crea el backend, la base PostgreSQL y el disco de los
+# adjuntos, ya conectados entre si. En Render: New -> Blueprint -> este repo.
+#
+# Las variables con "sync: false" son secretos o datos que dependen de cada
+# cuenta: Render las pide al crear el Blueprint y nunca pasan por el repo.
+
+services:
+  - type: web
+    name: moimpresiones-api
+    runtime: docker
+    # Produccion sale de main. develop es la rama de integracion.
+    branch: main
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    # El disco persistente exige un plan pago.
+    plan: starter
+    region: virginia
+    healthCheckPath: /api/categories
+    # Los adjuntos de las cotizaciones van a disco (Cloudinary bloquea los PDF
+    # en esta cuenta). Sin disco se borrarian en cada despliegue.
+    disk:
+      name: archivos
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: moimpresiones-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: moimpresiones-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: moimpresiones-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: moimpresiones-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: moimpresiones-db
+          property: password
+
+      # Render genera un valor aleatorio y largo; nadie necesita conocerlo.
+      - key: JWT_SECRET
+        generateValue: true
+
+      - key: MEDIA_PATH
+        value: /var/data
+      - key: MEDIA_PROVIDER
+        value: cloudinary
+      - key: ATTACHMENT_PROVIDER
+        value: local
+
+      # Se cargan a mano en Render al crear el Blueprint.
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false
+      # Direccion del sitio en Netlify y dominio propio, separados por coma.
+      - key: CORS_ORIGINS
+        sync: false
+      # Dominio publico del sitio, sin barra final (sitemap y enlaces del mail).
+      - key: SITE_URL
+        sync: false
+
+      # Aviso por mail de cotizaciones. Sin MAIL_HOST queda apagado.
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: NOTIFICACIONES_DESTINO
+        value: contacto@moimpresiones.com
+      - key: NOTIFICACIONES_REMITENTE
+        sync: false
+
+databases:
+  - name: moimpresiones-db
+    databaseName: moimpresiones
+    user: moimpresiones
+    plan: basic-256mb
+    region: virginia
+    # Solo el backend se conecta: nada desde afuera de Render.
+    ipAllowList: []
