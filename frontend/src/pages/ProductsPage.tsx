@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Category, FiltrosDisponibles, ProductSummary } from '../api/types'
 import { useApi } from '../hooks/useApi'
-import { ArrowRightIcon, ChevronDownIcon } from '../components/Icons'
+import { ArrowRightIcon, CheckIcon, ChevronDownIcon, PlusIcon } from '../components/Icons'
 import { PageHeader, ErrorState } from '../components/PageChrome'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { metaDe } from '../config/paginas'
@@ -11,6 +11,19 @@ import { SkeletonListadoProductos } from '../components/Skeletons'
 import { ImagenConCarga } from '../components/ImagenConCarga'
 import { FiltrosCatalogo, type FiltrosElegidos } from '../components/FiltrosCatalogo'
 import { colorDeRubro } from '../components/BarraCMYK'
+import { itemVacio, MAX_ITEMS, usePresupuesto } from '../hooks/usePresupuesto'
+
+/**
+ * ¿Se entró al catálogo para sumar productos al presupuesto?
+ *
+ * <p>Se lleva en la dirección y no en un estado suelto para que el modo
+ * sobreviva a entrar en un rubro, filtrar o recargar la página, y para que
+ * volver atrás desde el presupuesto devuelva al catálogo como estaba.
+ */
+function useModoEleccion() {
+  const [searchParams] = useSearchParams()
+  return searchParams.get('elegir') === '1'
+}
 
 /**
  * Listado de rubros.
@@ -27,6 +40,7 @@ export function ProductsPage() {
   const [filtros, setFiltros] = useState<FiltrosElegidos>({})
   const [searchParams, setSearchParams] = useSearchParams()
   const hayFiltro = Boolean(filtros.finishing || filtros.material)
+  const eligiendo = useModoEleccion()
 
   // Con ?rubro=slug se entra directo a un rubro, que es como llega quien lo
   // elige desde el menú del celular.
@@ -43,11 +57,17 @@ export function ProductsPage() {
   const rubro = rubroElegido ? categories.find((c) => c.slug === rubroElegido) : undefined
 
   return (
-    <div className="pt-20 pb-14 sm:pt-24 sm:pb-20">
+    // Con la barra de selección abajo, el último renglón de productos quedaría
+    // tapado: por eso el espacio extra al pie mientras se elige.
+    <div className={`pt-20 sm:pt-24 ${eligiendo ? 'pb-48 sm:pb-52' : 'pb-14 sm:pb-20'}`}>
       <PageHeader
-        eyebrow="Catálogo"
-        title="Productos"
-        description="Elegí un rubro para ver todo lo que producimos. Cada ficha incluye materiales, formatos y terminaciones disponibles."
+        eyebrow={eligiendo ? 'Tu presupuesto' : 'Catálogo'}
+        title={eligiendo ? 'Elegí los productos' : 'Productos'}
+        description={
+          eligiendo
+            ? 'Tocá cada producto que quieras cotizar. Cuando termines, tocá Finalizado y volvés al formulario con todo cargado.'
+            : 'Elegí un rubro para ver todo lo que producimos. Cada ficha incluye materiales, formatos y terminaciones disponibles.'
+        }
       />
 
       <div className="mx-auto mt-7 max-w-6xl sm:mt-10 space-y-6 px-6">
@@ -66,6 +86,8 @@ export function ProductsPage() {
           </>
         )}
       </div>
+
+      {eligiendo && <BarraDeSeleccion />}
     </div>
   )
 }
@@ -241,46 +263,188 @@ function VistaEscritorio({ categories }: { categories: Category[] }) {
 }
 
 function ProductGrid({ products }: { products: ProductSummary[] }) {
+  const eligiendo = useModoEleccion()
+
   if (products.length === 0) {
     return <p className="text-ink-500">Estamos cargando los productos de este rubro.</p>
   }
 
   return (
     <ul className="grid grid-cols-2 gap-2.5 sm:gap-3">
-      {products.map((product) => (
-        <li key={product.slug}>
-          <Link
-            to={`/productos/${product.slug}`}
-            className="group flex h-full flex-col overflow-hidden rounded-xl border border-ink-100 bg-white transition duration-300 hover:-translate-y-1 hover:border-ink-900 hover:shadow-lg"
-          >
-            {product.coverImageUrl && (
-              <ImagenConCarga
-                url={product.coverImageUrl}
-                ancho={560}
-                alt=""
-                contenedorClassName="aspect-[4/3] w-full"
-                className="size-full object-contain transition duration-500 group-hover:scale-105"
-              />
-            )}
-            <span className="flex flex-1 flex-col justify-between gap-2 p-3 sm:gap-3 sm:p-5">
-              <span>
-                <span className="block text-sm leading-snug font-medium text-ink-900 sm:text-base">
-                  {product.name}
-                </span>
-                {/* El resumen se oculta en celular: a media pantalla de ancho
-                    alarga la tarjeta sin agregar nada que no diga el nombre. */}
-                {product.summary && (
-                  <span className="mt-1 hidden text-sm text-ink-500 sm:block">{product.summary}</span>
-                )}
-              </span>
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-brand-600 sm:text-sm">
+      {products.map((product) =>
+        eligiendo ? (
+          <li key={product.slug}>
+            <TarjetaElegible product={product} />
+          </li>
+        ) : (
+          <li key={product.slug}>
+            <Link
+              to={`/productos/${product.slug}`}
+              className="group flex h-full flex-col overflow-hidden rounded-xl border border-ink-100 bg-white transition duration-300 hover:-translate-y-1 hover:border-ink-900 hover:shadow-lg"
+            >
+              <PortadaYNombre product={product} />
+              <span className="inline-flex items-center gap-1 px-3 pb-3 text-xs font-medium text-brand-600 sm:px-5 sm:pb-5 sm:text-sm">
                 Ver ficha
                 <ArrowRightIcon className="size-3.5 transition-transform group-hover:translate-x-1 sm:size-4" />
               </span>
-            </span>
-          </Link>
-        </li>
-      ))}
+            </Link>
+          </li>
+        ),
+      )}
     </ul>
+  )
+}
+
+/** Foto y nombre, que son iguales se esté eligiendo o no. */
+function PortadaYNombre({ product }: { product: ProductSummary }) {
+  return (
+    <>
+      {product.coverImageUrl && (
+        <ImagenConCarga
+          url={product.coverImageUrl}
+          ancho={560}
+          alt=""
+          contenedorClassName="aspect-[4/3] w-full"
+          className="size-full object-contain transition duration-500 group-hover:scale-105"
+        />
+      )}
+      <span className="flex flex-1 flex-col gap-2 p-3 sm:gap-3 sm:p-5">
+        <span className="block text-sm leading-snug font-medium text-ink-900 sm:text-base">
+          {product.name}
+        </span>
+        {/* El resumen se oculta en celular: a media pantalla de ancho alarga la
+            tarjeta sin agregar nada que no diga el nombre. */}
+        {product.summary && (
+          <span className="mt-1 hidden text-sm text-ink-500 sm:block">{product.summary}</span>
+        )}
+      </span>
+    </>
+  )
+}
+
+/**
+ * Tarjeta cuando se está armando el presupuesto: un toque lo suma y otro lo
+ * saca. No lleva a la ficha a propósito; quien entró a elegir viene a juntar
+ * varios, y abrir cada ficha para volver atrás hace ese camino largo.
+ */
+function TarjetaElegible({ product }: { product: ProductSummary }) {
+  const { agregar, quitar, contiene, items } = usePresupuesto()
+  const elegido = contiene(product.slug)
+  const lleno = items.length >= MAX_ITEMS
+
+  function alternar() {
+    if (elegido) {
+      quitar(items.findIndex((item) => item.productSlug === product.slug))
+      return
+    }
+    agregar(
+      itemVacio({
+        productSlug: product.slug,
+        productName: product.name,
+        coverImageUrl: product.coverImageUrl,
+      }),
+    )
+  }
+
+  return (
+    <div
+      className={`flex h-full flex-col overflow-hidden rounded-xl border bg-white transition duration-300 ${
+        elegido ? 'border-brand-600 ring-2 ring-brand-600' : 'border-ink-100 hover:border-ink-900'
+      }`}
+    >
+      <button
+        type="button"
+        onClick={alternar}
+        aria-pressed={elegido}
+        disabled={!elegido && lleno}
+        className="group flex flex-1 flex-col text-left disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <PortadaYNombre product={product} />
+        <span
+          className={`m-3 mt-0 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium sm:m-5 sm:mt-0 sm:text-sm ${
+            elegido ? 'bg-brand-600 text-white' : 'bg-ink-100 text-ink-900'
+          }`}
+        >
+          {elegido ? (
+            <>
+              <CheckIcon className="size-4" />
+              Agregado
+            </>
+          ) : (
+            <>
+              <PlusIcon className="size-4" />
+              Agregar
+            </>
+          )}
+        </span>
+      </button>
+
+      {/* Quien duda entre dos productos necesita los materiales y las medidas;
+          el enlace va aparte del botón porque una tarjeta que hace dos cosas
+          distintas al tocarla termina agregando lo que no se quería. */}
+      <Link
+        to={`/productos/${product.slug}`}
+        className="border-t border-ink-100 px-3 py-2 text-center text-xs font-medium text-brand-600 transition hover:bg-ink-50 sm:px-5 sm:text-sm"
+      >
+        Ver ficha
+      </Link>
+    </div>
+  )
+}
+
+/**
+ * Barra fija con lo que se lleva elegido, al modo de un carrito.
+ *
+ * <p>Sin ella, quien elige cinco productos no tiene forma de saber qué juntó
+ * ni cómo terminar, salvo volver al menú.
+ */
+function BarraDeSeleccion() {
+  const { items, quitar } = usePresupuesto()
+  const navegar = useNavigate()
+  const elegidos = items.filter((item) => item.productSlug)
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-ink-900/95 backdrop-blur">
+      <div className="mx-auto max-w-6xl px-4 py-3 pr-20 sm:px-6 sm:py-4 sm:pr-24">
+        {elegidos.length === 0 ? (
+          <p className="text-sm text-ink-100">
+            Tocá los productos que quieras cotizar. Se van sumando acá abajo.
+          </p>
+        ) : (
+          <>
+            <ul className="flex flex-wrap gap-2">
+              {elegidos.map((item) => (
+                <li key={item.productSlug}>
+                  <button
+                    type="button"
+                    onClick={() => quitar(items.indexOf(item))}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 py-1.5 pr-2 pl-3 text-xs text-white transition hover:bg-white/20 sm:text-sm"
+                    aria-label={`Quitar ${item.productName}`}
+                  >
+                    {item.productName}
+                    <span aria-hidden="true" className="text-ink-300">
+                      ✕
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <p className="text-xs text-ink-300 sm:text-sm">
+                {elegidos.length} {elegidos.length === 1 ? 'producto elegido' : 'productos elegidos'}
+                {items.length >= MAX_ITEMS && ' · llegaste al máximo'}
+              </p>
+              <button
+                type="button"
+                onClick={() => navegar('/cotiza')}
+                className="rounded-full bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition hover:bg-ink-100"
+              >
+                Finalizado
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
