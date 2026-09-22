@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Finishing } from '../api/types'
 import { useApi } from '../hooks/useApi'
+import { terminacionesDelHtml } from '../api/datosDelHtml'
 import { Modal } from '../components/Modal'
 import { ErrorState, PageHeader } from '../components/PageChrome'
 import type React from 'react'
@@ -19,7 +20,11 @@ import { ImagenConCarga } from '../components/ImagenConCarga'
  * Al tocar una se abre un modal con su foto y su descripcion.
  */
 export function FinishingsPage() {
-  const { data: finishings, loading, error } = useApi<Finishing[]>(() => api.finishings(), [])
+  const { data: finishings, loading, error } = useApi<Finishing[]>(
+    () => api.finishings(),
+    [],
+    terminacionesDelHtml,
+  )
   const [selected, setSelected] = useState<Finishing | null>(null)
 
   // Se vuelve a observar cuando llegan los datos: antes no había qué revelar.

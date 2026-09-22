@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type { ProductDetail } from '../api/types'
 import { useApi } from '../hooks/useApi'
+import { productoDelHtml } from '../api/datosDelHtml'
 import { ArrowRightIcon } from '../components/Icons'
 import { ErrorState } from '../components/PageChrome'
 import { usePageMeta } from '../hooks/usePageMeta'
@@ -18,6 +19,7 @@ export function ProductDetailPage() {
   const { data: product, loading, error } = useApi<ProductDetail>(
     () => api.product(slug),
     [slug],
+    productoDelHtml(slug),
   )
 
   // El hook se llama siempre, aunque el producto todavía no haya llegado:
