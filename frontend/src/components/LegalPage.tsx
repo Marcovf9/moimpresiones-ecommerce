@@ -14,8 +14,10 @@ export function LegalPage({
   const fiscal = identificacionFiscal()
 
   return (
-    <div className="pt-20 pb-14 sm:pt-24 sm:pb-20">
-      <article className="mx-auto max-w-3xl px-6">
+    <div className="pt-24 pb-14 sm:pt-28 sm:pb-20">
+      {/* El texto legal es largo: sobre el papel oscuro se lee mejor en una hoja clara. */}
+      <article className="mx-auto max-w-3xl px-4 sm:px-6">
+        <div className="rounded-2xl bg-white px-5 py-8 shadow-xl sm:px-10 sm:py-12">
         <h1 className="font-display text-4xl font-semibold text-ink-900">{title}</h1>
         <p className="mt-3 text-sm text-ink-500">Última actualización: {updatedAt}</p>
 
@@ -28,6 +30,7 @@ export function LegalPage({
         )}
 
         <div className="mt-8 space-y-8 text-ink-700">{children}</div>
+        </div>
       </article>
     </div>
   )

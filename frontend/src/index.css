@@ -22,6 +22,11 @@
    * bordes y texto sobre negro, donde sí alcanza (4,8:1).
    */
   --color-brand-700: #ad0067;
+  /*
+   * Magenta para texto chico directo sobre el papel oscuro del fondo. El del
+   * logo ahí da 2,4:1 y este llega a 4,8:1; se usa solo para eso.
+   */
+  --color-brand-300: #ff85c8;
   --color-cian: #00aafa;
   --color-amarillo: #ffe108;
 
@@ -35,19 +40,20 @@ html {
 
 body {
   @apply text-ink-900 font-sans antialiased;
-  background-color: var(--color-ink-50);
+  /* Mientras carga la imagen, un gris del mismo tono: no hay destello blanco. */
+  background-color: #2a2a2c;
 }
 
 /*
- * Fondo del sitio: papel tenue en lugar del gris plano.
+ * Fondo del sitio: papel negro arrugado con rasgaduras en los tres colores de
+ * la marca, elegido por el cliente.
  *
- * Dos capas fijas detrás de todo, para una imprenta:
- *  - resplandores muy suaves en cian y magenta, los colores de la marca, que
- *    dan profundidad sin teñir el contenido;
- *  - un grano finísimo que imita la textura del papel.
+ * Va en un ::before fijo y no como background-attachment: fixed en el body:
+ * en iOS ese modo no existe y la imagen se estiraría a lo largo de toda la
+ * página. Así queda quieta detrás del contenido en cualquier pantalla.
  *
- * Van en ::before del body con position fixed, así no se mueven al hacer
- * scroll y no interfieren con el apilado de modales ni del menú.
+ * El degradado encima la oscurece un 25%: sin eso, los textos grises
+ * secundarios quedaban por debajo del contraste mínimo en los pliegues claros.
  */
 body::before {
   content: '';
@@ -55,30 +61,14 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-color: #fafafa;
+  background-color: #2a2a2c;
   background-image:
-    radial-gradient(60rem 40rem at 12% -10%, rgb(0 170 250 / 0.07), transparent 60%),
-    radial-gradient(50rem 35rem at 92% 8%, rgb(248 0 147 / 0.06), transparent 60%),
-    radial-gradient(45rem 45rem at 70% 100%, rgb(255 225 8 / 0.05), transparent 60%);
+    linear-gradient(rgb(0 0 0 / 0.25), rgb(0 0 0 / 0.25)),
+    url('/imagenes/fondo-papel.jpg');
+  background-size: cover;
+  background-position: center;
 }
 
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.4;
-  /* Ruido generado por SVG: pesa unos cientos de bytes y no pide otra descarga. */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)' opacity='0.35'/%3E%3C/svg%3E");
-}
-
-/* Quien pidió menos movimiento probablemente también prefiera menos ruido visual. */
-@media (prefers-reduced-motion: reduce) {
-  body::after {
-    opacity: 0.2;
-  }
-}
 
 /*
  * Aparición progresiva al hacer scroll.
