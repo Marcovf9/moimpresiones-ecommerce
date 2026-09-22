@@ -18,7 +18,7 @@ export const EMPRESA = {
     calle: 'José Javier Díaz 50',
     ciudad: 'Córdoba',
     provincia: 'Córdoba',
-    codigoPostal: '',
+    codigoPostal: 'X5000',
     pais: 'Argentina',
     /**
      * Coordenadas del local, para el marcador del mapa. Se obtuvieron

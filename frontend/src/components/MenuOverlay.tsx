@@ -22,7 +22,7 @@ interface MenuOverlayProps {
 
 /**
  * Menu principal, segun el boceto: Buscar, Inicio, Quienes somos, Productos,
- * Terminaciones, Contacto (que despliega los canales) y Cotiza tu producto.
+ * Terminaciones, Contacto (que despliega los canales) y Cotiza tu proyecto.
  */
 export function MenuOverlay({ open, onClose, contact }: MenuOverlayProps) {
   const [contactOpen, setContactOpen] = useState(false)
@@ -149,7 +149,7 @@ export function MenuOverlay({ open, onClose, contact }: MenuOverlayProps) {
               onClick={onClose}
               className="flex items-center justify-between gap-3 border-b border-white/10 py-3.5 font-display text-xl text-ink-50 transition hover:text-brand-500 sm:py-4 sm:text-2xl"
             >
-              Cotizá tu producto
+              Cotizá tu proyecto
               {/* El contador avisa que hay un pedido a medio armar. */}
               {items.length > 0 && (
                 <span className="grid min-w-7 place-items-center rounded-full bg-brand-600 px-2 py-0.5 text-sm font-medium text-white">

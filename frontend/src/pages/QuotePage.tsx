@@ -116,13 +116,24 @@ export function QuotePage() {
               )}
             </h2>
             {items.length < MAX_ITEMS && (
-              <button
-                type="button"
-                onClick={() => agregar(itemVacio())}
-                className="rounded-lg border border-ink-300 px-3 py-2 text-sm font-medium text-ink-900 transition hover:border-ink-900"
-              >
-                Agregar otro producto
-              </button>
+              <div className="flex flex-wrap gap-2">
+                {/* Elegir del catálogo es el camino habitual: así el pedido
+                    llega con el nombre exacto del producto. Describirlo a mano
+                    queda como salida para lo que no está en el catálogo. */}
+                <Link
+                  to="/productos?elegir=1"
+                  className="rounded-lg bg-ink-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-ink-700"
+                >
+                  Agregar producto
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => agregar(itemVacio())}
+                  className="rounded-lg border border-ink-300 px-3 py-2 text-sm font-medium text-ink-900 transition hover:border-ink-900"
+                >
+                  Describirlo yo
+                </button>
+              </div>
             )}
           </div>
 
@@ -136,13 +147,14 @@ export function QuotePage() {
             <div className="mt-4 rounded-xl border border-dashed border-ink-300 px-6 py-8 text-center">
               <p className="text-ink-500">Todavía no agregaste nada.</p>
               <Link
-                to="/productos"
-                className="mt-3 inline-block text-sm font-medium text-brand-600 underline transition hover:text-brand-700"
+                to="/productos?elegir=1"
+                className="mt-4 inline-block rounded-full bg-ink-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-ink-700"
               >
-                Ver el catálogo
+                Agregar producto
               </Link>
               <p className="mt-4 text-sm text-ink-500">
-                O agregá un producto en blanco y describilo con tus palabras.
+                Elegís del catálogo y volvés acá con todo cargado. Si lo que necesitás no está,
+                describilo con tus palabras.
               </p>
             </div>
           ) : (
