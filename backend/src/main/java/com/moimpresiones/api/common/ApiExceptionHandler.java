@@ -37,6 +37,12 @@ public class ApiExceptionHandler {
                 .body(ApiError.of(413, "Payload Too Large", "El archivo supera el tamano maximo permitido"));
     }
 
+    @ExceptionHandler(DemasiadosEnviosException.class)
+    public ResponseEntity<ApiError> handleDemasiadosEnvios(DemasiadosEnviosException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ApiError.of(429, "Too Many Requests", ex.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fields = new LinkedHashMap<>();

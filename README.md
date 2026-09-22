@@ -1,5 +1,7 @@
 # MO Impresiones — print shop website, catalog and admin panel
 
+[![CI](https://github.com/Marcovf9/moimpresiones-ecommerce/actions/workflows/ci.yml/badge.svg)](https://github.com/Marcovf9/moimpresiones-ecommerce/actions/workflows/ci.yml)
+
 **Live at [moimpresiones.com](https://moimpresiones.com)** · Java 21 · Spring Boot 3.5 · React 19 · PostgreSQL
 
 A production website built for a real client: a family-run print shop in Córdoba, Argentina, in
@@ -134,6 +136,12 @@ persistent disk and served only through an authenticated admin endpoint that str
 and login throttling counted per username *and* per IP at once: per username alone lets anyone lock
 the owner out on purpose; per IP alone is bypassed with a handful of addresses.
 
+**Public write endpoints capped by a sliding window.** Asking for a quote needs no account and no
+captcha, on purpose: every extra step loses a real customer. The cost is that a script can fill the
+owner's inbox and the disk, so quote submissions and uploads are capped per IP per hour. The window
+slides rather than resetting on the clock hour, which previously let a burst at 10:59 and another at
+11:00 pass twice the limit.
+
 **Photos shipped as a migration.** Deploying to a fresh database revealed that the catalog photos
 only existed in the development database — production would have come up with 22 products and no
 images. Migration `V11` inserts the Cloudinary URLs, matched by slug (ids differ between databases),
@@ -158,7 +166,8 @@ against the actual background luminance rather than assumed.
 | Maps | Leaflet + OpenStreetMap, lazy-loaded |
 | Email | Spring Mail over SMTP, async after commit |
 | Hosting | Render (API + PostgreSQL, Docker), Netlify (SPA) |
-| Tests | JUnit 5 |
+| Tests | JUnit 5, Vitest + Testing Library, GitHub Actions |
+| Ops | Actuator health check, WebP assets, CSP and security headers |
 
 Roughly 5,700 lines of Java across 87 classes and 7,000 lines of TypeScript across 61 files.
 
@@ -212,13 +221,19 @@ Cloudinary credentials, SMTP and contact details. See [`.env.ejemplo`](.env.ejem
 ## Tests
 
 ```bash
-cd backend && ./mvnw test
+cd backend  && ./mvnw test   # 33 JUnit tests
+cd frontend && npm test      # 14 Vitest tests
 ```
 
-29 JUnit tests covering the pieces where a mistake is silent or expensive: the WhatsApp message
-builder, the quote notification email, login throttling, the password policy, Cloudinary URL
-handling and text normalisation. The production Docker image runs them during the build, so a
-failing test never gets deployed.
+The backend tests cover the pieces where a mistake is silent or expensive: the WhatsApp message
+builder, the quote notification email, login throttling and the submission rate limiter (including
+concurrent requests from one address), the password policy, Cloudinary URL handling and text
+normalisation. The frontend tests cover the quote list — the one thing a visitor
+builds up across pages, kept in `localStorage` — and the image transformation that keeps a 2.6 MB
+photo from being served as is.
+
+Both suites run on every push through [GitHub Actions](.github/workflows/ci.yml), and the production
+Docker image runs the backend tests during the build, so a failing test never gets deployed.
 
 ---
 

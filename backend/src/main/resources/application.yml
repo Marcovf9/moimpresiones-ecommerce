@@ -90,6 +90,25 @@ app:
     # 2 h: si alguien roba el token, la ventana de uso es corta.
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
 
+# Chequeo de salud para Render y para el monitoreo externo. Solo se publica
+# /actuator/health, sin detalles: el estado interno no es informacion publica.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+  health:
+    # El aviso por mail es accesorio: esta hecho para que un SMTP caido no
+    # afecte al sitio. Si contara en el estado de salud, un problema de Gmail
+    # haria que Render diera el servicio por caido y lo reiniciara.
+    mail:
+      enabled: false
+
 logging:
   level:
     com.moimpresiones.api: INFO

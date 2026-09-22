@@ -1,5 +1,6 @@
 package com.moimpresiones.api.security;
 
+import com.moimpresiones.api.common.DireccionIp;
 import com.moimpresiones.api.security.dto.LoginRequest;
 import com.moimpresiones.api.security.dto.LoginResponse;
 import com.moimpresiones.api.user.AdminUser;
@@ -38,7 +39,7 @@ public class AuthController {
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
         String porUsuario = "usuario:" + request.username().toLowerCase();
-        String porIp = "ip:" + direccionDe(http);
+        String porIp = "ip:" + DireccionIp.de(http);
 
         // Se comprueban los dos contadores: uno protege la cuenta, el otro al
         // atacante que prueba muchos usuarios desde el mismo lugar.
@@ -57,7 +58,7 @@ public class AuthController {
         } catch (AuthenticationException ex) {
             intentos.registrarFallo(porUsuario);
             intentos.registrarFallo(porIp);
-            log.warn("Login fallido para '{}' desde {}", request.username(), direccionDe(http));
+            log.warn("Login fallido para '{}' desde {}", request.username(), DireccionIp.de(http));
             // Mismo mensaje para usuario inexistente y contrasena incorrecta: decir
             // cual de los dos falla le confirma al atacante que el usuario existe.
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos");
@@ -69,22 +70,10 @@ public class AuthController {
 
         intentos.registrarExito(porUsuario);
         intentos.registrarExito(porIp);
-        log.info("Ingreso al panel: '{}' desde {}", user.getUsername(), direccionDe(http));
+        log.info("Ingreso al panel: '{}' desde {}", user.getUsername(), DireccionIp.de(http));
 
         String token = jwtService.generateToken(user.getUsername(), user.getRole());
         return new LoginResponse(token, jwtService.getExpirationMinutes(), user.getUsername(), user.getFullName());
     }
 
-    /**
-     * En produccion la aplicacion queda detras de un proxy, asi que la IP real
-     * llega en X-Forwarded-For y no en la conexion.
-     */
-    private static String direccionDe(HttpServletRequest http) {
-        String reenviada = http.getHeader("X-Forwarded-For");
-        if (reenviada != null && !reenviada.isBlank()) {
-            // El encabezado puede traer varias: la primera es la del cliente.
-            return reenviada.split(",")[0].trim();
-        }
-        return http.getRemoteAddr();
-    }
 }

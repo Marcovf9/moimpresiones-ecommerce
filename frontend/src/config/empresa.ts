@@ -30,6 +30,17 @@ export const EMPRESA = {
   /** Horario de atención, en texto libre. Ej: 'Lunes a viernes de 8 a 17 h'. */
   horarioAtencion: 'Lunes a viernes de 8 a 16 h, de corrido',
 
+  /**
+   * El mismo horario, en el formato que espera schema.org. Va aparte del texto
+   * libre porque Google no interpreta 'de corrido' y una cadena suelta le
+   * impide mostrar si el local está abierto ahora.
+   */
+  horarioEstructurado: {
+    dias: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+    abre: '08:00',
+    cierra: '16:00',
+  },
+
   /** Dominio propio, sin barra final. */
   sitioWeb: 'https://moimpresiones.com',
 
