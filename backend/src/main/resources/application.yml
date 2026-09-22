@@ -1,0 +1,95 @@
+spring:
+  application:
+    name: moimpresiones-api
+
+  datasource:
+    # En Render la base llega en partes (DB_HOST, DB_PORT, DB_NAME): su cadena
+    # de conexion viene en formato postgres:// y el driver necesita jdbc:.
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:moimpresiones}}
+    username: ${DB_USER:moimpresiones}
+    password: ${DB_PASSWORD:moimpresiones}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: America/Argentina/Cordoba
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  # Correo saliente para los avisos de cotizacion. Sin MAIL_HOST no se crea el
+  # cliente de correo y los avisos quedan apagados, sin romper nada.
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${MAIL_SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${MAIL_STARTTLS:true}
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
+
+  servlet:
+    multipart:
+      max-file-size: 8MB
+      max-request-size: 12MB
+
+server:
+  # Render indica el puerto en PORT; en desarrollo se usa 8080.
+  port: ${PORT:${SERVER_PORT:8080}}
+  # Detras del proxy de Render la conexion llega como http. Con esto la
+  # aplicacion lee X-Forwarded-Proto y sabe que el visitante vino por https,
+  # que es lo que habilita la cabecera HSTS.
+  forward-headers-strategy: native
+  error:
+    include-message: always
+
+app:
+  # Origenes permitidos para el frontend (separados por coma)
+  cors-allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
+  # Donde se guardan las imagenes del panel: 'local' (disco) o 'cloudinary'.
+  # En produccion va cloudinary: el disco del hosting es efimero y cada
+  # despliegue borraria las fotos. Cloudinary necesita CLOUDINARY_URL.
+  media-provider: ${MEDIA_PROVIDER:local}
+  # Carpeta del disco, solo cuando media-provider=local
+  media-storage-path: ${MEDIA_PATH:./uploads}
+  # Donde van los archivos que adjunta el cliente al cotizar. Se configura
+  # aparte de las fotos porque son privados: solo se abren desde el panel.
+  # Cloudinary bloquea la entrega de PDF salvo que se habilite en la cuenta
+  # (Settings -> Security -> Allow delivery of PDF and ZIP files); mientras
+  # tanto, 'local' es el unico que funciona.
+  attachment-provider: ${ATTACHMENT_PROVIDER:local}
+  # URL publica bajo la que se sirven esas imagenes
+  media-public-path: /media
+  # Dominio del sitio, sin barra final. Necesario para el sitemap.
+  public-url: ${SITE_URL:https://moimpresiones.com}
+  # Datos de contacto de la imprenta (menu Contacto y armado del mensaje de WhatsApp).
+  # Son publicos: van en el sitio. Se pueden pisar por variable de entorno.
+  contact:
+    # +54 9 351 621 1435, en formato internacional sin signos (es lo que acepta wa.me).
+    whatsapp-number: ${WHATSAPP_NUMBER:5493516211435}
+    instagram-url: ${INSTAGRAM_URL:https://instagram.com/mo.impresiones}
+    email: ${CONTACT_EMAIL:contacto@moimpresiones.com}
+
+  # A quien avisar cuando entra una cotizacion, y desde que direccion.
+  notificaciones:
+    email-destino: ${NOTIFICACIONES_DESTINO:contacto@moimpresiones.com}
+    email-remitente: ${NOTIFICACIONES_REMITENTE:}
+
+  jwt:
+    # EN PRODUCCION: definir JWT_SECRET (minimo 32 caracteres) como variable de entorno
+    secret: ${JWT_SECRET:cambiar-este-secreto-de-desarrollo-moimpresiones-2026}
+    # 2 h: si alguien roba el token, la ventana de uso es corta.
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
+
+logging:
+  level:
+    com.moimpresiones.api: INFO

@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: moimpresiones-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: moimpresiones
+      POSTGRES_USER: moimpresiones
+      POSTGRES_PASSWORD: moimpresiones
+    ports:
+      - "5432:5432"
+    volumes:
+      - moimpresiones-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moimpresiones -d moimpresiones"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  moimpresiones-pgdata:

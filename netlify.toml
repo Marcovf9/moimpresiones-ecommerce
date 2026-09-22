@@ -1,0 +1,51 @@
+# Configuracion del frontend en Netlify.
+#
+# moimpresiones-api.onrender.com es la direccion que Render le da al servicio
+# del render.yaml. Si ese nombre estaba tomado y Render asigno otro, cambiarlo
+# aca en los tres lugares donde aparece.
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # A donde le habla el sitio. Vite la fija en el momento del build.
+  VITE_API_URL = "https://moimpresiones-api.onrender.com"
+
+# El sitemap y el robots.txt los genera el backend a partir del catalogo, pero
+# Google los busca en el dominio del sitio: Netlify los trae del backend.
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "https://moimpresiones-api.onrender.com/sitemap.xml"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/robots.txt"
+  to = "https://moimpresiones-api.onrender.com/robots.txt"
+  status = 200
+  force = true
+
+# Es una aplicacion de una sola pagina: cualquier ruta que no sea un archivo
+# devuelve index.html. Sin esto, recargar /productos/estuches da 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Cabeceras de seguridad del sitio. Las del backend solo cubren la API.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Los archivos del build llevan un hash en el nombre: se pueden cachear un año.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

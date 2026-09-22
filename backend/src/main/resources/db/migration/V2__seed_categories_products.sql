@@ -1,0 +1,90 @@
+-- Catálogo provisto por el cliente (documentos "Productos ... FINAL")
+
+INSERT INTO categories (slug, name, description, display_order) VALUES
+('institucional', 'Institucional', 'Piezas que representan a tu empresa: carpetas, tarjetas, sobres y anotadores con la identidad de tu marca.', 1),
+('comercial', 'Comercial', 'Material para comunicar productos, servicios y promociones en acciones comerciales y puntos de venta.', 2),
+('editorial', 'Editorial', 'Libros, revistas, cómics y manuales para editoriales, autores e instituciones.', 3),
+('impresos-numerados', 'Impresos Numerados', 'Talonarios, remitos, rifas y entradas con numeración correlativa y control.', 4),
+('packaging', 'Packaging', 'Estuches, etiquetas y cajas que protegen, presentan y destacan tus productos.', 5),
+('regalos-empresariales', 'Regalos Empresariales', 'Productos personalizados para regalar y mantener tu marca presente todo el año.', 6);
+
+INSERT INTO products (category_id, slug, name, summary, description, display_order)
+SELECT c.id, p.slug, p.name, p.summary, p.description, p.ord
+FROM (VALUES
+-- INSTITUCIONAL
+('institucional', 'carpetas-institucionales', 'Carpetas Institucionales',
+ 'Presentación profesional para documentación, presupuestos y propuestas.',
+ 'Una presentación profesional para organizar y entregar documentación, presupuestos, propuestas o material comercial. Personalizadas con la identidad de tu empresa para reforzar la imagen de marca en cada presentación.', 1),
+('institucional', 'tarjetas-personales-empresariales', 'Tarjetas personales / empresariales',
+ 'La pieza esencial para presentar tu marca y dejar tus datos de contacto.',
+ 'Una pieza esencial para presentar tu marca de forma profesional y dejar tus datos de contacto de manera clara y personalizada. Ideales para empresas, profesionales, comercios y equipos de trabajo.', 2),
+('institucional', 'sobres-personalizados', 'Sobres personalizados',
+ 'Prácticos y profesionales para documentación y correspondencia.',
+ 'Una opción práctica y profesional para presentar documentación, presupuestos, comunicaciones o correspondencia con la identidad visual de tu empresa.', 3),
+('institucional', 'anotadores-corporativos', 'Anotadores corporativos',
+ 'Funcionalidad diaria y presencia de marca en cada reunión.',
+ 'Una herramienta práctica para el uso diario que combina funcionalidad y presencia de marca. Ideales para reuniones, capacitaciones, eventos, regalos empresariales o uso interno del equipo.', 4),
+-- COMERCIAL
+('comercial', 'folletos', 'Folletos',
+ 'Comunicá productos, servicios y promociones de forma clara y atractiva.',
+ 'Una herramienta versátil para comunicar productos, servicios, promociones o información institucional de forma clara y atractiva. Ideales para acciones comerciales, eventos, puntos de venta y presentación de empresas.', 1),
+('comercial', 'catalogos', 'Catálogos',
+ 'Presentá líneas completas de productos de forma ordenada y profesional.',
+ 'Una herramienta comercial pensada para presentar productos, servicios y líneas completas de forma ordenada, atractiva y profesional. Ideales para ventas, distribuidores, showrooms y presentaciones de marca.', 2),
+('comercial', 'individuales-personalizados', 'Individuales personalizados',
+ 'Tu marca sobre la mesa: gastronomía, eventos y promociones.',
+ 'Una opción práctica y versátil para gastronomía, eventos y acciones promocionales. Permiten presentar la identidad de marca, promociones, menús, juegos o información de forma visible directamente sobre la mesa.', 3),
+-- EDITORIAL
+('editorial', 'libros', 'Libros',
+ 'Producción de libros para editoriales, autores y proyectos independientes.',
+ 'Producción de libros personalizados para editoriales, empresas, instituciones, autores y proyectos independientes. Diferentes formatos, papeles y terminaciones según las necesidades de cada publicación.', 1),
+('editorial', 'revistas', 'Revistas',
+ 'Publicaciones para empresas, instituciones y editoriales.',
+ 'Impresión de revistas para empresas, instituciones, editoriales y publicaciones independientes, con diferentes opciones de formato, cantidad de páginas y terminaciones.', 2),
+('editorial', 'comics', 'Cómics',
+ 'Impresión de cómics con formatos y terminaciones a medida.',
+ 'Impresión de cómics para editoriales, autores y proyectos independientes, con opciones de formato, papel y terminaciones adaptadas al estilo de cada publicación.', 3),
+('editorial', 'manuales-instructivos', 'Manuales / Instructivos',
+ 'Información técnica presentada de forma clara y ordenada.',
+ 'Impresión de manuales e instructivos para empresas, industrias, productos y capacitaciones, pensados para presentar información técnica de forma clara, ordenada y profesional.', 4),
+-- IMPRESOS NUMERADOS
+('impresos-numerados', 'talonarios', 'Talonarios',
+ 'Registro ordenado y correlativo de operaciones, pedidos y entregas.',
+ 'Impresos prácticos para registrar operaciones, pedidos, entregas o movimientos de forma ordenada y correlativa. Ideales para comercios, empresas, talleres, servicios e instituciones.', 1),
+('impresos-numerados', 'remitos', 'Remitos',
+ 'Control claro de cada entrega de mercadería.',
+ 'Impresos utilizados para registrar y acompañar la entrega de mercadería, permitiendo llevar un control claro y ordenado de cada operación.', 2),
+('impresos-numerados', 'rifas', 'Rifas',
+ 'Sorteos, eventos y campañas solidarias con numeración correlativa.',
+ 'Impresos pensados para sorteos, eventos, clubes, instituciones y campañas solidarias, con numeración correlativa para facilitar el control y la organización.', 3),
+('impresos-numerados', 'entradas', 'Entradas',
+ 'Acceso y control para eventos, espectáculos y fiestas.',
+ 'Impresos pensados para eventos, espectáculos, clubes, fiestas e instituciones, con opciones de numeración y control para facilitar el acceso y la organización.', 4),
+-- PACKAGING
+('packaging', 'estuches', 'Estuches',
+ 'Packaging que protege, presenta y destaca tu producto.',
+ 'Soluciones de packaging diseñadas para proteger, presentar y destacar productos de forma profesional. Se adaptan a diferentes formatos, medidas e identidades de marca.', 1),
+('packaging', 'etiquetas-autoadhesivas', 'Etiquetas autoadhesivas',
+ 'Identifican, informan y destacan productos y envases.',
+ 'Una solución práctica para identificar, informar y destacar productos, envases y packaging. Se pueden personalizar en diferentes tamaños y diseños según cada marca.', 2),
+('packaging', 'cajas-para-delivery', 'Cajas para delivery',
+ 'Transportá y presentá alimentos con la identidad de tu negocio.',
+ 'Packaging diseñado para transportar y presentar alimentos de forma práctica y profesional, con opciones personalizadas para reforzar la identidad de cada negocio.', 3),
+('packaging', 'collarines-cenefas-gondola', 'Collarines y Cenefas de góndola',
+ 'Comunicación que destaca tu producto en el punto de venta.',
+ 'Piezas de comunicación diseñadas para destacar productos, promociones o información directamente en el punto de venta. Ideales para botellas, envases, góndolas y exhibidores.', 4),
+-- REGALOS EMPRESARIALES
+('regalos-empresariales', 'naipes-personalizados', 'Naipes personalizados',
+ 'Mazos personalizados como regalo corporativo original.',
+ 'Producción de mazos personalizados para empresas, marcas, eventos y regalos corporativos. Una opción original para reforzar la identidad de marca con un producto útil, distintivo y totalmente personalizado.', 1),
+('regalos-empresariales', 'cuadernos-personalizados', 'Cuadernos personalizados',
+ 'Uso interno, capacitaciones, eventos o producto promocional.',
+ 'Cuadernos diseñados para empresas, instituciones y regalos corporativos, ideales para uso interno, capacitaciones, eventos o como producto promocional de uso diario.', 2),
+('regalos-empresariales', 'calendarios-personalizados', 'Calendarios personalizados',
+ 'Presencia de marca durante todo el año.',
+ 'Calendarios diseñados para empresas, marcas e instituciones, ideales para mantener presencia durante todo el año y acompañar acciones comerciales o regalos corporativos.', 3),
+('regalos-empresariales', 'almanaques-personalizados', 'Almanaques personalizados',
+ 'Material promocional que acompaña a tu cliente todo el año.',
+ 'Almanaques personalizados para empresas, comercios e instituciones, ideales como material promocional y para mantener la marca presente durante todo el año.', 4)
+) AS p(category_slug, slug, name, summary, description, ord)
+JOIN categories c ON c.slug = p.category_slug;

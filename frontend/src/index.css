@@ -1,0 +1,176 @@
+@import "tailwindcss";
+
+/*
+ * Tokens de marca de MO Impresiones.
+ * Los acentos salen del logo del cliente: magenta, cian y amarillo de proceso.
+ */
+@theme {
+  --color-ink-50: #f6f6f7;
+  --color-ink-100: #e3e3e6;
+  --color-ink-300: #a8a8b0;
+  --color-ink-500: #55555f;
+  --color-ink-700: #2a2a31;
+  --color-ink-900: #131317;
+
+  /* Colores reales de la marca, tomados del logo: las tres barras CMYK. */
+  --color-brand-500: #f80093;
+  --color-brand-600: #d1007c;
+  /*
+   * El magenta del logo (500) sobre fondo claro da 3,7:1, por debajo del 4,5:1
+   * que hace falta para leer texto cómodo. Para texto y botones sobre fondo
+   * claro se usa 600 (5,0:1) y 700 para el hover. El 500 queda para barras,
+   * bordes y texto sobre negro, donde sí alcanza (4,8:1).
+   */
+  --color-brand-700: #ad0067;
+  /*
+   * Magenta para texto chico directo sobre el papel oscuro del fondo. El del
+   * logo ahí da 2,4:1 y este llega a 4,8:1; se usa solo para eso.
+   */
+  --color-brand-300: #ff85c8;
+  --color-cian: #00aafa;
+  --color-amarillo: #ffe108;
+
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply text-ink-900 font-sans antialiased;
+  /* Mientras carga la imagen, un gris del mismo tono: no hay destello blanco. */
+  background-color: #2a2a2c;
+}
+
+/*
+ * Fondo del sitio: papel negro arrugado con rasgaduras en los tres colores de
+ * la marca, elegido por el cliente.
+ *
+ * Va en un ::before fijo y no como background-attachment: fixed en el body:
+ * en iOS ese modo no existe y la imagen se estiraría a lo largo de toda la
+ * página. Así queda quieta detrás del contenido en cualquier pantalla.
+ *
+ * El degradado encima la oscurece un 25%: sin eso, los textos grises
+ * secundarios quedaban por debajo del contraste mínimo en los pliegues claros.
+ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: #2a2a2c;
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.25), rgb(0 0 0 / 0.25)),
+    url('/imagenes/fondo-papel.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+
+/*
+ * Aparición progresiva al hacer scroll.
+ *
+ * El estado oculto cuelga de .js-revelar, una clase que el script agrega al
+ * <html> solo si va a poder revelarlos. Sin esa clase todo se ve normalmente:
+ * si el JavaScript falla o no llega a correr, el contenido nunca queda
+ * invisible por culpa de un efecto decorativo.
+ */
+.js-revelar [data-revelar] {
+  opacity: 0;
+  transform: translateY(1rem);
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
+}
+
+.js-revelar [data-revelar][data-revelado='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Escalonado: cada elemento entra apenas después del anterior. */
+.js-revelar [data-revelar][data-retraso='1'] { transition-delay: 0.08s; }
+.js-revelar [data-revelar][data-retraso='2'] { transition-delay: 0.16s; }
+.js-revelar [data-revelar][data-retraso='3'] { transition-delay: 0.24s; }
+
+/* Fundido de la foto del producto al pasar sola, para que no sea un salto. */
+@keyframes aparecer-foto {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.foto-carrusel {
+  animation: aparecer-foto 0.45s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .foto-carrusel {
+    animation: none;
+  }
+}
+
+/*
+ * Brillo que recorre el hueco de una foto mientras carga.
+ *
+ * Los tres colores de la marca, muy diluidos: en vez del gris de siempre, el
+ * estado de espera también habla de la identidad.
+ */
+@keyframes brillo {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.bg-brillo {
+  background-image: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgb(0 170 250 / 0.12) 38%,
+    rgb(248 0 147 / 0.12) 50%,
+    rgb(255 225 8 / 0.12) 62%,
+    transparent 80%
+  );
+}
+
+.animate-brillo {
+  animation: brillo 1.6s ease-in-out infinite;
+}
+
+/* Sin movimiento: queda un tinte fijo, que igual señala la espera. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-brillo {
+    animation: none;
+    background-image: none;
+    background-color: rgb(0 170 250 / 0.06);
+  }
+}
+
+/*
+ * Marcador del mapa: un punto en el magenta de la marca con la punta hacia
+ * abajo, para que se lea enseguida sobre el mapa claro.
+ */
+.marcador-mo {
+  display: block;
+  width: 1.625rem;
+  height: 1.625rem;
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  background-color: var(--color-brand-500);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.3);
+  transform: rotate(-45deg);
+}
+
+/* Leaflet dibuja su atribución con su propio tipo; la alineamos con el sitio. */
+.leaflet-container {
+  font-family: inherit;
+}

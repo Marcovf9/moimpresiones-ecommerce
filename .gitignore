@@ -1,0 +1,27 @@
+# Java / Maven
+backend/target/
+*.class
+*.jar
+!backend/.mvn/wrapper/maven-wrapper.jar
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+
+# Entorno
+.env
+.env.local
+*.local
+
+# Uploads de imagenes en desarrollo
+backend/uploads/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store

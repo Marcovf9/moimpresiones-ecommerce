@@ -1,0 +1,4 @@
+logging:
+  level:
+    com.moimpresiones.api: DEBUG
+    org.hibernate.SQL: DEBUG
