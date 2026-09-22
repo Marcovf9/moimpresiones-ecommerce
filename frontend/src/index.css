@@ -64,7 +64,9 @@ body::before {
   background-color: #2a2a2c;
   background-image:
     linear-gradient(rgb(0 0 0 / 0.25), rgb(0 0 0 / 0.25)),
-    url('/imagenes/fondo-papel.jpg');
+    /* WebP pesa 96 KB contra 169 KB del JPG, que queda de respaldo. */
+    image-set(url('/imagenes/fondo-papel.webp') type('image/webp'),
+              url('/imagenes/fondo-papel.jpg') type('image/jpeg'));
   background-size: cover;
   background-position: center;
 }
