@@ -10,7 +10,10 @@ interface PageMeta {
   image?: string
 }
 
-const SUFIJO = 'MO Impresiones';
+const SUFIJO = 'MO Impresiones'
+
+/** Vista previa por defecto al compartir: la portada con el nombre encima. */
+const IMAGEN_POR_DEFECTO = '/imagenes/og.jpg'
 
 /**
  * Ajusta título, descripción y etiquetas Open Graph de cada pantalla.
@@ -21,6 +24,7 @@ const SUFIJO = 'MO Impresiones';
  */
 export function usePageMeta({ title, description, path, image }: PageMeta) {
   useEffect(() => {
+    const imagen = image ?? IMAGEN_POR_DEFECTO
     const tituloCompleto = title === SUFIJO ? title : `${title} — ${SUFIJO}`
     document.title = tituloCompleto
 
@@ -29,7 +33,7 @@ export function usePageMeta({ title, description, path, image }: PageMeta) {
     setMeta('property', 'og:description', description)
     setMeta('property', 'og:type', 'website')
     setMeta('property', 'og:site_name', SUFIJO)
-    setMeta('name', 'twitter:card', image ? 'summary_large_image' : 'summary')
+    setMeta('name', 'twitter:card', 'summary_large_image')
 
     // Sin dominio configurado no publicamos URLs absolutas rotas.
     if (EMPRESA.sitioWeb && path) {
@@ -37,8 +41,21 @@ export function usePageMeta({ title, description, path, image }: PageMeta) {
       setMeta('property', 'og:url', url)
       setCanonical(url)
     }
-    if (EMPRESA.sitioWeb && image) {
-      setMeta('property', 'og:image', image.startsWith('http') ? image : `${EMPRESA.sitioWeb}${image}`)
+    if (EMPRESA.sitioWeb) {
+      setMeta(
+        'property',
+        'og:image',
+        imagen.startsWith('http') ? imagen : `${EMPRESA.sitioWeb}${imagen}`,
+      )
+      setMeta('property', 'og:image:alt', tituloCompleto)
+
+      // Las medidas del HTML son las de la imagen por defecto. La foto de un
+      // producto tiene otras, y anunciar unas medidas que no son deja la vista
+      // previa recortada, asi que se quitan.
+      if (image) {
+        document.head.querySelector('meta[property="og:image:width"]')?.remove()
+        document.head.querySelector('meta[property="og:image:height"]')?.remove()
+      }
     }
   }, [title, description, path, image])
 }
