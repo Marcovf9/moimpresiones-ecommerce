@@ -12,6 +12,15 @@ services:
     branch: main
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
+    # Sin esto, Render vuelve a desplegar ante cualquier cambio del repositorio,
+    # incluido uno que solo toca el frontend. Cada despliegue corta el servicio
+    # unos minutos, porque el disco de los adjuntos obliga a apagar la version
+    # vieja antes de levantar la nueva: publicar un texto del sitio dejaba el
+    # catalogo sin cargar mientras tanto.
+    buildFilter:
+      paths:
+        - backend/**
+        - render.yaml
     # El disco persistente exige un plan pago.
     plan: starter
     region: virginia
