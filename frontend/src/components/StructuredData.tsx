@@ -25,8 +25,28 @@ export function StructuredData() {
       areaServed: { '@type': 'Country', name: 'Argentina' },
     }
 
-    if (EMPRESA.sitioWeb) negocio.url = EMPRESA.sitioWeb
-    if (EMPRESA.horarioAtencion) negocio.openingHours = EMPRESA.horarioAtencion
+    if (EMPRESA.sitioWeb) {
+      negocio.url = EMPRESA.sitioWeb
+      negocio.image = `${EMPRESA.sitioWeb}/imagenes/og.jpg`
+      negocio.logo = `${EMPRESA.sitioWeb}/imagenes/logo.webp`
+    }
+
+    // En formato schema.org, no en texto libre: asi Google puede mostrar si
+    // el local esta abierto en este momento.
+    negocio.openingHoursSpecification = [
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: EMPRESA.horarioEstructurado.dias,
+        opens: EMPRESA.horarioEstructurado.abre,
+        closes: EMPRESA.horarioEstructurado.cierra,
+      },
+    ]
+
+    negocio.geo = {
+      '@type': 'GeoCoordinates',
+      latitude: EMPRESA.domicilio.coordenadas.lat,
+      longitude: EMPRESA.domicilio.coordenadas.lon,
+    }
     if (contact?.email) negocio.email = contact.email
     if (contact?.whatsappNumber) negocio.telephone = `+${contact.whatsappNumber}`
     if (contact?.instagramUrl) negocio.sameAs = [contact.instagramUrl]
