@@ -3,7 +3,9 @@ spring:
     name: moimpresiones-api
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/moimpresiones}
+    # En Render la base llega en partes (DB_HOST, DB_PORT, DB_NAME): su cadena
+    # de conexion viene en formato postgres:// y el driver necesita jdbc:.
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:moimpresiones}}
     username: ${DB_USER:moimpresiones}
     password: ${DB_PASSWORD:moimpresiones}
 

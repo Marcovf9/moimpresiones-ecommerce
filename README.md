@@ -108,17 +108,54 @@ Hay datos que el código deja explícitamente en blanco en lugar de inventarlos:
    aviso visible de que están incompletas.
 2. **Variables de entorno** — `WHATSAPP_NUMBER`, `INSTAGRAM_URL`, `CONTACT_EMAIL`,
    `SITE_URL`, y un `JWT_SECRET` propio de al menos 32 caracteres.
-3. **`frontend/public/video/`** — el video de portada y su poster.
-4. **Fotos** de productos y terminaciones, que se cargan desde el panel.
+3. **Fotos** de productos y terminaciones: las actuales vienen en la migración
+   `V11__fotos_del_catalogo.sql`; las nuevas se cargan desde el panel.
 
 Los términos y condiciones están redactados para una imprenta, pero **conviene que
 los revise un abogado** antes de publicarlos.
 
-### Servir la SPA
+## Despliegue
 
-El frontend es una aplicación de una sola página: el servidor tiene que devolver
-`index.html` para cualquier ruta que no sea un archivo, o `/productos/estuches`
-va a dar 404 al recargar.
+Backend y base en **Render**, frontend en **Netlify**. La base es PostgreSQL
+en Render y no TiDB: el backend usa funciones propias de PostgreSQL (búsqueda
+sin acentos con `unaccent`, similitud con `pg_trgm`, triggers en plpgsql) que
+TiDB, compatible con MySQL, no tiene.
+
+Producción sale de `main`: antes del primer despliegue hay que llevar `develop`
+a `main`.
+
+### 1. Render (backend + base)
+
+1. En Render: **New → Blueprint** y elegir este repositorio. Lee `render.yaml`
+   y crea el servicio `moimpresiones-api`, la base `moimpresiones-db` y un disco
+   de 1 GB para los adjuntos, ya conectados entre sí. `JWT_SECRET` lo genera
+   Render solo.
+2. Completar las variables que pide:
+   - `ADMIN_PASSWORD` — la clave del panel. Larga y que no se use en otro lado.
+   - `CLOUDINARY_URL` — la misma del `.env` local.
+   - `CORS_ORIGINS` — la dirección de Netlify y el dominio propio, separados
+     por coma: `https://moimpresiones.netlify.app,https://moimpresiones.com`.
+   - `SITE_URL` — el dominio público, sin barra final.
+   - `MAIL_*` y `NOTIFICACIONES_REMITENTE` — opcionales; sin `MAIL_HOST` no
+     se mandan avisos por mail y el resto funciona igual.
+3. Al arrancar, Flyway crea las tablas y carga el catálogo con sus fotos (que
+   ya están en Cloudinary). El usuario del panel se crea con `ADMIN_PASSWORD`
+   la primera vez: cambiar esa variable después no cambia la clave, para eso
+   está la opción del panel.
+
+### 2. Netlify (frontend)
+
+1. Si Render asignó una dirección distinta de `moimpresiones-api.onrender.com`,
+   reemplazarla en `netlify.toml` (aparece tres veces).
+2. En Netlify: **Add new site → Import an existing project** con este
+   repositorio y la rama `main`. El resto lo toma de `netlify.toml`: la carpeta
+   `frontend`, el build, la vuelta a `index.html` en cada ruta y el sitemap y
+   robots servidos desde el backend.
+
+### 3. Dominio
+
+Apuntar el dominio a Netlify (Domain management) y agregarlo a `CORS_ORIGINS`
+en Render.
 
 ## Flujo de trabajo con Git
 

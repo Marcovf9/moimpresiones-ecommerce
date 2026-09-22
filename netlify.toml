@@ -1,7 +1,8 @@
 # Configuracion del frontend en Netlify.
 #
-# ANTES DEL PRIMER DESPLIEGUE: reemplazar moimpresiones-api.onrender.com por la
-# direccion real que asigne Render al backend (aparece en el panel de Render).
+# moimpresiones-api.onrender.com es la direccion que Render le da al servicio
+# del render.yaml. Si ese nombre estaba tomado y Render asigno otro, cambiarlo
+# aca en los tres lugares donde aparece.
 
 [build]
   base = "frontend"
