@@ -56,6 +56,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(properties.getMediaPublicPath() + "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/sitemap.xml", "/robots.txt").permitAll()
+                        // Chequeo de salud: lo consultan Render y el monitoreo externo.
+                        .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**")
+                        .permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Panel de administracion
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

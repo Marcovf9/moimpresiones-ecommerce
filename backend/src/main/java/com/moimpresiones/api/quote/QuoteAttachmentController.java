@@ -1,13 +1,12 @@
 package com.moimpresiones.api.quote;
 
+import com.moimpresiones.api.common.DireccionIp;
+import com.moimpresiones.api.common.LimiteDeEnvios;
 import com.moimpresiones.api.media.InvalidMediaException;
 import com.moimpresiones.api.media.PrivateFileStorage;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -39,21 +38,16 @@ public class QuoteAttachmentController {
     private static final int SUBIDAS_POR_HORA = 12;
 
     private final PrivateFileStorage storage;
+    private final LimiteDeEnvios limite;
 
-    private final Map<String, AtomicInteger> subidasPorIp = new ConcurrentHashMap<>();
-    private volatile int horaActual = -1;
-
-    public QuoteAttachmentController(PrivateFileStorage storage) {
+    public QuoteAttachmentController(PrivateFileStorage storage, LimiteDeEnvios limite) {
         this.storage = storage;
+        this.limite = limite;
     }
 
     @PostMapping
     public AdjuntoSubido subir(@RequestParam("file") MultipartFile file, HttpServletRequest http) {
-        String ip = direccionDe(http);
-        if (superaElTope(ip)) {
-            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
-                    "Alcanzaste el límite de archivos por hora. Escribinos por WhatsApp.");
-        }
+        limite.registrar(DireccionIp.de(http), SUBIDAS_POR_HORA);
 
         if (file == null || file.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo está vacío");
@@ -79,16 +73,6 @@ public class QuoteAttachmentController {
         }
     }
 
-    private boolean superaElTope(String ip) {
-        int hora = java.time.LocalTime.now().getHour();
-        if (hora != horaActual) {
-            subidasPorIp.clear();
-            horaActual = hora;
-        }
-        return subidasPorIp.computeIfAbsent(ip, k -> new AtomicInteger()).incrementAndGet()
-                > SUBIDAS_POR_HORA;
-    }
-
     /**
      * El nombre original solo se usa para mostrarlo en el panel, nunca como
      * ruta, pero igual se limpia: podria traer HTML o separadores de directorio.
@@ -102,14 +86,6 @@ public class QuoteAttachmentController {
             return "archivo";
         }
         return limpio.length() > 255 ? limpio.substring(limpio.length() - 255) : limpio;
-    }
-
-    private static String direccionDe(HttpServletRequest http) {
-        String reenviada = http.getHeader("X-Forwarded-For");
-        if (reenviada != null && !reenviada.isBlank()) {
-            return reenviada.split(",")[0].trim();
-        }
-        return http.getRemoteAddr();
     }
 
     public record AdjuntoSubido(String storageKey, String filename, String contentType,

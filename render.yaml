@@ -15,7 +15,7 @@ services:
     # El disco persistente exige un plan pago.
     plan: starter
     region: virginia
-    healthCheckPath: /api/categories
+    healthCheckPath: /actuator/health
     # Los adjuntos de las cotizaciones van a disco (Cloudinary bloquea los PDF
     # en esta cuenta). Sin disco se borrarian en cada despliegue.
     disk:
