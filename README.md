@@ -147,6 +147,14 @@ only existed in the development database — production would have come up with 
 images. Migration `V11` inserts the Cloudinary URLs, matched by slug (ids differ between databases),
 and only where no image exists yet, so it never overwrites what the owner changed from the panel.
 
+**The catalog ships inside the HTML, because a crawler will not wait for a flaky API.** Search
+Console reported `/productos` as a *soft 404*: Google runs the JavaScript, and it happened to render
+the page while the backend was restarting, so it saw an error message instead of a catalog. The
+build now writes the catalog into each page — a readable summary plus the data as JSON — and the
+app starts from it, then refreshes from the API. The page is full on first paint, it survives the
+API being down, and what Google renders is a catalog either way. The trade-off is that the embedded
+copy ages until the next deploy, which is why the live data still overwrites it.
+
 **One HTML file per route, so a single-page app can be indexed.** The server returned the same
 `index.html` for every URL, and that file carried the home page's title and canonical link. React
 rewrites them on load, but a crawler's first pass does not run JavaScript: Search Console reported

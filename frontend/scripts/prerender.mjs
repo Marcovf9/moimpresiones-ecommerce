@@ -9,9 +9,16 @@
  * ("Pagina alternativa con etiqueta canonica adecuada"), y WhatsApp mostraba
  * la vista previa de la portada al compartir cualquier ficha.
  *
- * <p>Esto no es renderizado del lado del servidor: el cuerpo de la pagina sigue
- * armandolo React. Lo unico que cambia por direccion son las etiquetas del
- * encabezado, que es lo que leen los buscadores y las redes.
+ * <p>Ademas, cada archivo lleva dentro de #root un resumen de la pagina en
+ * HTML: titulo, texto y los enlaces del catalogo. React lo reemplaza apenas
+ * arranca, asi que el visitante nunca lo ve como algo aparte, pero cambia dos
+ * cosas: Google encuentra contenido aunque la API no conteste en ese instante
+ * —lo dio por "Soft 404" cuando rastreo /productos justo durante un reinicio
+ * del backend— y quien entra con el backend caido ve al menos que existen y
+ * como se llaman los productos, en vez de un error.
+ *
+ * <p>Esto no es renderizado del lado del servidor: el cuerpo real lo arma
+ * React. Lo incrustado es un resumen, no una copia de la pantalla.
  *
  * <p>Si la API no responde al publicar, se generan igual las pantallas fijas y
  * el build no falla: es preferible publicar sin las fichas a no publicar.
@@ -48,7 +55,7 @@ function reemplazar(html, patron, reemplazo) {
   return html.replace(patron, reemplazo)
 }
 
-function armarHtml(base, { titulo, descripcion, ruta, imagen }) {
+function armarHtml(base, { titulo, descripcion, ruta, imagen, contenido, datos }) {
   const tituloCompleto = titulo === SUFIJO ? titulo : `${titulo} — ${SUFIJO}`
   const url = `${SITIO}${ruta}`
   let html = base
@@ -99,6 +106,22 @@ function armarHtml(base, { titulo, descripcion, ruta, imagen }) {
       .replace(/\s*<meta property="og:image:height" content="[^"]*" \/>/, '')
   }
 
+  if (contenido) {
+    // Los datos van en un <script type="application/json">: el navegador no lo
+    // ejecuta, y el sitio lo lee para arrancar con el catalogo ya cargado.
+    const json = datos
+      ? `<script id="datos-del-sitio" type="application/json">${JSON.stringify(datos).replaceAll(
+          '</',
+          '<\\/',
+        )}</script>`
+      : ''
+    html = reemplazar(
+      html,
+      /<div id="root"><\/div>/,
+      `<div id="root">${contenido}</div>${json}`,
+    )
+  }
+
   return html
 }
 
@@ -128,19 +151,125 @@ async function pedirCatalogo(intentos = 5) {
   }
 }
 
+/** Texto plano, escapado, para el contenido incrustado. */
+function texto(valor) {
+  return escapar(valor ?? '')
+}
+
+function enlace(ruta, etiqueta) {
+  return `<a href="${escapar(ruta)}">${texto(etiqueta)}</a>`
+}
+
+/**
+ * Resumen de la pagina en HTML, para que el archivo no llegue vacio.
+ *
+ * <p>Usa las clases del sitio para que el cambio a la version de React no se
+ * note: mismos colores y mismos margenes.
+ */
+function resumen({ titulo, descripcion, cuerpo = '' }) {
+  return `<div class="mx-auto max-w-6xl px-6 pt-24 pb-14">
+      <h1 class="font-display text-3xl font-semibold text-white sm:text-5xl">${texto(titulo)}</h1>
+      <p class="mt-3 max-w-2xl text-ink-300 sm:text-lg">${texto(descripcion)}</p>
+      ${cuerpo}
+    </div>`
+}
+
+/** El catalogo entero como lista de enlaces. */
+function cuerpoDelCatalogo(categorias) {
+  return categorias
+    .map(
+      (categoria) => `<section class="mt-8">
+        <h2 class="font-display text-2xl font-semibold text-white">${texto(categoria.name)}</h2>
+        ${categoria.description ? `<p class="mt-1 text-ink-300">${texto(categoria.description)}</p>` : ''}
+        <ul class="mt-3 space-y-1 text-ink-100">
+          ${(categoria.products ?? [])
+            .map(
+              (producto) =>
+                `<li>${enlace(`/productos/${producto.slug}`, producto.name)}${
+                  producto.summary ? ` — ${texto(producto.summary)}` : ''
+                }</li>`,
+            )
+            .join('\n          ')}
+        </ul>
+      </section>`,
+    )
+    .join('\n      ')
+}
+
+function cuerpoDeTerminaciones(terminaciones) {
+  return `<ul class="mt-8 space-y-3 text-ink-100">
+        ${terminaciones
+          .map(
+            (terminacion) =>
+              `<li><strong class="text-white">${texto(terminacion.name)}</strong>${
+                terminacion.description ? ` — ${texto(terminacion.description)}` : ''
+              }</li>`,
+          )
+          .join('\n        ')}
+      </ul>`
+}
+
+function cuerpoDeProducto(producto, categoria) {
+  return `<p class="mt-4 text-ink-100">${texto(producto.summary ?? '')}</p>
+      <p class="mt-6 text-ink-300">Rubro: ${enlace(
+        `/productos?rubro=${categoria.slug}`,
+        categoria.name,
+      )}</p>
+      <p class="mt-2 text-ink-300">${enlace('/cotiza', 'Pedí un presupuesto')} · ${enlace(
+        '/terminaciones',
+        'Ver las terminaciones',
+      )}</p>`
+}
+
+/** La ficha completa de un producto, con su ficha tecnica. */
+async function detalleDe(slug) {
+  try {
+    const respuesta = await fetch(`${API}/api/products/${slug}`, {
+      signal: AbortSignal.timeout(20_000),
+    })
+    return respuesta.ok ? await respuesta.json() : null
+  } catch {
+    return null
+  }
+}
+
 /** Las fichas de producto, con su propia foto para compartir. */
-async function fichasDeProducto() {
-  const categorias = await pedirCatalogo()
-  return categorias.flatMap((categoria) =>
-    (categoria.products ?? []).map((producto) => ({
-      ruta: `/productos/${producto.slug}`,
-      titulo: producto.name,
-      descripcion:
+async function fichasDesde(categorias) {
+  const fichas = categorias.flatMap((categoria) =>
+    (categoria.products ?? []).map((producto) => {
+      const descripcion =
         producto.summary ??
-        'Materiales, formatos y terminaciones disponibles. Pedí tu presupuesto sin compromiso.',
-      imagen: producto.coverImageUrl ?? undefined,
-    })),
+        'Materiales, formatos y terminaciones disponibles. Pedí tu presupuesto sin compromiso.'
+      return {
+        ruta: `/productos/${producto.slug}`,
+        titulo: producto.name,
+        descripcion,
+        imagen: producto.coverImageUrl ?? undefined,
+        contenido: resumen({
+          titulo: producto.name,
+          descripcion,
+          cuerpo: cuerpoDeProducto(producto, categoria),
+        }),
+      }
+    }),
   )
+
+  // El detalle se pide de a uno: la lista del catalogo no trae la ficha
+  // tecnica, que es la mitad de lo que muestra la pantalla del producto.
+  for (const ficha of fichas) {
+    const slug = ficha.ruta.replace('/productos/', '')
+    const producto = await detalleDe(slug)
+    if (producto) ficha.datos = { producto }
+  }
+
+  return fichas
+}
+
+/** Las terminaciones, para el resumen de esa pantalla. */
+async function listaDeTerminaciones() {
+  const respuesta = await fetch(`${API}/api/finishings`, { signal: AbortSignal.timeout(20_000) })
+  if (!respuesta.ok) throw new Error(`La API respondio ${respuesta.status}`)
+  return respuesta.json()
 }
 
 const base = await readFile(join(DIST, 'index.html'), 'utf8')
@@ -149,15 +278,47 @@ const destinos = Object.entries(paginas).map(([ruta, pagina]) => ({
   ruta,
   titulo: pagina.titulo,
   descripcion: pagina.descripcion,
+  contenido: resumen({ titulo: pagina.titulo, descripcion: pagina.descripcion }),
 }))
 
+/** Devuelve el destino ya armado de una ruta fija, para completarle el cuerpo. */
+function destinoDe(ruta) {
+  return destinos.find((destino) => destino.ruta === ruta)
+}
+
 try {
-  destinos.push(...(await fichasDeProducto()))
+  const categorias = await pedirCatalogo()
+
+  const catalogo = destinoDe('/productos')
+  catalogo.contenido = resumen({
+    titulo: catalogo.titulo,
+    descripcion: catalogo.descripcion,
+    cuerpo: cuerpoDelCatalogo(categorias),
+  })
+  catalogo.datos = { categorias }
+
+  // La portada muestra los rubros con su foto.
+  destinoDe('/').datos = { categorias }
+
+  destinos.push(...(await fichasDesde(categorias)))
 } catch (error) {
   console.warn(
     `[prerender] Sin fichas de producto: ${error.message}. ` +
       'Se generan solo las pantallas fijas.',
   )
+}
+
+try {
+  const terminaciones = await listaDeTerminaciones()
+  const destino = destinoDe('/terminaciones')
+  destino.contenido = resumen({
+    titulo: destino.titulo,
+    descripcion: destino.descripcion,
+    cuerpo: cuerpoDeTerminaciones(terminaciones),
+  })
+  destino.datos = { terminaciones }
+} catch (error) {
+  console.warn(`[prerender] Sin el detalle de terminaciones: ${error.message}.`)
 }
 
 for (const destino of destinos) {
