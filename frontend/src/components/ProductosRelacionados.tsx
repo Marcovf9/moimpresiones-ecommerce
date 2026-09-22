@@ -34,7 +34,7 @@ export function ProductosRelacionados({
   const otros = hermanos.filter((p) => p.slug !== slugActual)
 
   return (
-    <div className="mt-20 border-t border-ink-100 pt-10">
+    <div className="mt-20 border-t border-white/10 pt-10">
       {(anterior || siguiente) && (
         <nav
           aria-label="Navegación entre productos del rubro"
@@ -51,7 +51,7 @@ export function ProductosRelacionados({
 
       {otros.length > 0 && (
         <section className="mt-12">
-          <h2 className="font-display text-2xl font-semibold text-ink-900">
+          <h2 className="font-display text-2xl font-semibold text-white">
             Más de {categoryName}
           </h2>
           <ul className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">

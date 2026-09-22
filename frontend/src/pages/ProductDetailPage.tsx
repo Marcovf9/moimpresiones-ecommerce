@@ -39,24 +39,24 @@ export function ProductDetailPage() {
   return (
     <article className="pt-20 pb-14 sm:pt-24 sm:pb-20">
       <div className="mx-auto max-w-6xl px-6">
-        <nav aria-label="Ruta de navegación" className="text-sm text-ink-500">
+        <nav aria-label="Ruta de navegación" className="text-sm text-ink-300">
           <Link
             to="/productos"
             // El padding negativo agranda el área táctil sin correr el texto.
-            className="-m-3 inline-block p-3 transition hover:text-ink-900"
+            className="-m-3 inline-block p-3 transition hover:text-white"
           >
             Productos
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-ink-900">{product.categoryName}</span>
+          <span className="text-white">{product.categoryName}</span>
         </nav>
 
         <header className="mt-6">
-          <h1 className="font-display text-3xl font-semibold text-ink-900 sm:text-5xl">
+          <h1 className="font-display text-3xl font-semibold text-white sm:text-5xl">
             {product.name}
           </h1>
           {product.description && (
-            <p className="mt-5 max-w-3xl text-lg leading-relaxed text-ink-700">
+            <p className="mt-5 max-w-3xl text-lg leading-relaxed text-ink-100">
               {product.description}
             </p>
           )}
@@ -66,8 +66,8 @@ export function ProductDetailPage() {
 
         {product.specs.length > 0 && (
           <section className="mt-16">
-            <h2 className="font-display text-2xl font-semibold text-ink-900">Ficha técnica</h2>
-            <dl className="mt-6 overflow-hidden rounded-2xl border border-ink-100 bg-white">
+            <h2 className="font-display text-2xl font-semibold text-white">Ficha técnica</h2>
+            <dl className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-white">
               {product.specs.map((spec, index) => (
                 <div
                   key={spec.id}
@@ -85,10 +85,10 @@ export function ProductDetailPage() {
 
         {product.finishings.length > 0 && (
           <section className="mt-12">
-            <h2 className="font-display text-xl font-semibold text-ink-900 sm:text-2xl">
+            <h2 className="font-display text-xl font-semibold text-white sm:text-2xl">
               Terminaciones disponibles
             </h2>
-            <p className="mt-1 text-sm text-ink-500">Tocá cualquiera para ver de qué se trata.</p>
+            <p className="mt-1 text-sm text-ink-300">Tocá cualquiera para ver de qué se trata.</p>
             <ul className="mt-4 flex flex-wrap gap-2">
               {product.finishings.map((terminacion) => (
                 <li key={terminacion.slug}>
@@ -97,10 +97,10 @@ export function ProductDetailPage() {
                       ya están explicadas con foto: acá se enlazan. */}
                   <Link
                     to={`/terminaciones?ver=${encodeURIComponent(terminacion.slug)}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-ink-300 px-3 py-2 text-sm text-ink-700 transition hover:border-ink-900 hover:text-ink-900"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-ink-900/40 px-3 py-2 text-sm text-ink-100 transition hover:border-white hover:text-white"
                   >
                     {terminacion.name}
-                    <span aria-hidden="true" className="text-brand-600">?</span>
+                    <span aria-hidden="true" className="text-brand-300">?</span>
                   </Link>
                 </li>
               ))}
@@ -108,7 +108,7 @@ export function ProductDetailPage() {
           </section>
         )}
 
-        <div className="mt-14 rounded-2xl bg-ink-900 px-8 py-10 text-center">
+        <div className="mt-14 rounded-2xl border border-white/10 bg-ink-900/85 px-8 py-10 text-center">
           <h2 className="font-display text-2xl font-semibold text-white sm:text-3xl">
             ¿Te interesa este producto?
           </h2>

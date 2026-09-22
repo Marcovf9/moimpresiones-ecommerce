@@ -173,13 +173,13 @@ export function PreguntasPage() {
       />
 
       <div className="mx-auto mt-7 max-w-3xl px-6 sm:mt-10">
-        <ul className="divide-y divide-ink-100 rounded-2xl border border-ink-100 bg-white">
+        <ul className="divide-y divide-ink-100 rounded-2xl border border-white/10 bg-white">
           {PREGUNTAS.map((item, indice) => (
             <Desplegable key={indice} {...item} />
           ))}
         </ul>
 
-        <div className="mt-8 rounded-2xl bg-ink-900 px-6 py-8 text-center text-white">
+        <div className="mt-8 rounded-2xl border border-white/10 bg-ink-900/85 px-6 py-8 text-center text-white">
           <h2 className="font-display text-xl font-semibold sm:text-2xl">
             ¿No encontraste lo que buscabas?
           </h2>
