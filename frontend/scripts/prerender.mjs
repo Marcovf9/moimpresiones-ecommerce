@@ -102,12 +102,35 @@ function armarHtml(base, { titulo, descripcion, ruta, imagen }) {
   return html
 }
 
+const esperar = (ms) => new Promise((seguir) => setTimeout(seguir, ms))
+
+/**
+ * Consulta el catalogo, reintentando.
+ *
+ * <p>El backend se reinicia en cada despliegue y en ese rato responde 502. Si
+ * el build cae justo ahi, el sitio se publica sin las fichas: paso una vez, y
+ * el aviso queda enterrado en el registro del build. Reintentar cubre esa
+ * ventana, que dura menos de un minuto.
+ */
+async function pedirCatalogo(intentos = 5) {
+  for (let intento = 1; ; intento++) {
+    try {
+      const respuesta = await fetch(`${API}/api/categories`, {
+        signal: AbortSignal.timeout(20_000),
+      })
+      if (!respuesta.ok) throw new Error(`La API respondio ${respuesta.status}`)
+      return await respuesta.json()
+    } catch (error) {
+      if (intento >= intentos) throw error
+      console.warn(`[prerender] Intento ${intento} de ${intentos}: ${error.message}. Reintento...`)
+      await esperar(15_000)
+    }
+  }
+}
+
 /** Las fichas de producto, con su propia foto para compartir. */
 async function fichasDeProducto() {
-  const respuesta = await fetch(`${API}/api/categories`, { signal: AbortSignal.timeout(20_000) })
-  if (!respuesta.ok) throw new Error(`La API respondio ${respuesta.status}`)
-
-  const categorias = await respuesta.json()
+  const categorias = await pedirCatalogo()
   return categorias.flatMap((categoria) =>
     (categoria.products ?? []).map((producto) => ({
       ruta: `/productos/${producto.slug}`,
