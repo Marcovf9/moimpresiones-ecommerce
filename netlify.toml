@@ -51,7 +51,7 @@
     # script-src acepta 'unsafe-inline' por los datos estructurados de
     # schema.org, que van en un <script> dentro de la pagina y cambian segun la
     # pantalla, asi que no se les puede calcular un hash fijo.
-    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.tile.openstreetmap.org; connect-src 'self' https://api.moimpresiones.com; upgrade-insecure-requests"
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' https://api.moimpresiones.com; upgrade-insecure-requests"
 
 # Los archivos del build llevan un hash en el nombre: se pueden cachear un año.
 [[headers]]
