@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ApiError } from '../../api/client'
-import { adminApi } from '../adminClient'
+import { adminApi, type FiltrosDeCotizaciones } from '../adminClient'
 import type { AdminQuote, AdminQuoteAttachment, Page, QuoteStatus } from '../adminTypes'
 import { useAdminData } from '../useAdminData'
 import { Banner, Button, Card, EmptyState, Spinner } from '../components/AdminUI'
 import { QuoteStatusBadge } from '../components/QuoteStatusBadge'
+import { IconoBuscar, IconoDescargar } from '../components/IconosAdmin'
 
 type Filter = QuoteStatus | 'TODAS'
 
@@ -17,10 +18,34 @@ const FILTERS: { value: Filter; label: string }[] = [
 
 export function QuotesPage() {
   const [filter, setFilter] = useState<Filter>('PENDIENTE')
+  const [texto, setTexto] = useState('')
+  const [desde, setDesde] = useState('')
+  const [hasta, setHasta] = useState('')
   const [page, setPage] = useState(0)
+  const [bajando, setBajando] = useState(false)
+  const [errorPlanilla, setErrorPlanilla] = useState<string | null>(null)
+
+  // La búsqueda espera a que se deje de escribir: sin esto sale una consulta
+  // por tecla.
+  const [textoBuscado, setTextoBuscado] = useState('')
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setTextoBuscado(texto)
+      setPage(0)
+    }, 350)
+    return () => clearTimeout(id)
+  }, [texto])
+
+  const filtros: FiltrosDeCotizaciones = {
+    estado: filter,
+    texto: textoBuscado,
+    desde: desde || undefined,
+    hasta: hasta || undefined,
+  }
+
   const { data, loading, error, reload } = useAdminData<Page<AdminQuote>>(
-    () => adminApi.quotes(filter, page),
-    [filter, page],
+    () => adminApi.quotes(filtros, page),
+    [filter, page, textoBuscado, desde, hasta],
   )
 
   function changeFilter(next: Filter) {
@@ -28,40 +53,138 @@ export function QuotesPage() {
     setPage(0)
   }
 
+  function limpiar() {
+    setTexto('')
+    setDesde('')
+    setHasta('')
+    setFilter('TODAS')
+    setPage(0)
+  }
+
+  async function bajarPlanilla() {
+    setBajando(true)
+    setErrorPlanilla(null)
+    try {
+      await adminApi.descargarPlanilla(filtros)
+    } catch (e) {
+      setErrorPlanilla(e instanceof ApiError ? e.message : 'No pudimos armar la planilla.')
+    } finally {
+      setBajando(false)
+    }
+  }
+
+  const hayBusqueda = Boolean(textoBuscado || desde || hasta || filter !== 'TODAS')
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-semibold text-ink-900">Cotizaciones</h1>
-        <p className="mt-1 text-ink-500">
-          Cada pedido que entra por el sitio. Respondé por WhatsApp y marcá en qué punto está.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-semibold text-ink-900">Cotizaciones</h1>
+          <p className="mt-1 text-ink-500">
+            Cada pedido que entra por el sitio. Respondé por WhatsApp y marcá en qué punto está.
+          </p>
+        </div>
+
+        <Button variant="secondary" onClick={bajarPlanilla} disabled={bajando}>
+          <span className="inline-flex items-center gap-2">
+            <IconoDescargar className="size-4" />
+            {bajando ? 'Armando...' : 'Bajar planilla'}
+          </span>
+        </Button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {FILTERS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => changeFilter(option.value)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-              filter === option.value
-                ? 'bg-ink-900 text-white'
-                : 'border border-ink-300 text-ink-500 hover:border-ink-900 hover:text-ink-900'
-            }`}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
+      <Card className="space-y-4">
+        <label className="block">
+          <span className="sr-only">Buscar</span>
+          <span className="flex items-center gap-2 rounded-xl border border-ink-300 px-3 focus-within:border-ink-900">
+            <IconoBuscar className="size-4 shrink-0 text-ink-500" />
+            <input
+              type="search"
+              value={texto}
+              onChange={(e) => setTexto(e.target.value)}
+              placeholder="Buscar por nombre, empresa, teléfono, mail o producto"
+              className="w-full py-2.5 text-sm focus:outline-none"
+            />
+          </span>
+        </label>
+
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-wrap gap-2">
+            {FILTERS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => changeFilter(option.value)}
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                  filter === option.value
+                    ? 'bg-ink-900 text-white'
+                    : 'border border-ink-300 text-ink-500 hover:border-ink-900 hover:text-ink-900'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-end gap-2">
+            <label className="text-xs text-ink-500">
+              Desde
+              <input
+                type="date"
+                value={desde}
+                max={hasta || undefined}
+                onChange={(e) => {
+                  setDesde(e.target.value)
+                  setPage(0)
+                }}
+                className="mt-1 block rounded-lg border border-ink-300 px-2 py-1.5 text-sm focus:border-ink-900 focus:outline-none"
+              />
+            </label>
+            <label className="text-xs text-ink-500">
+              Hasta
+              <input
+                type="date"
+                value={hasta}
+                min={desde || undefined}
+                onChange={(e) => {
+                  setHasta(e.target.value)
+                  setPage(0)
+                }}
+                className="mt-1 block rounded-lg border border-ink-300 px-2 py-1.5 text-sm focus:border-ink-900 focus:outline-none"
+              />
+            </label>
+          </div>
+
+          {hayBusqueda && (
+            <button
+              type="button"
+              onClick={limpiar}
+              className="py-1.5 text-sm font-medium text-brand-600 underline transition hover:text-brand-700"
+            >
+              Limpiar
+            </button>
+          )}
+
+          {data && (
+            <span className="ml-auto text-sm text-ink-500">
+              {data.totalElements} {data.totalElements === 1 ? 'cotización' : 'cotizaciones'}
+            </span>
+          )}
+        </div>
+      </Card>
+
+      {errorPlanilla && <Banner kind="error">{errorPlanilla}</Banner>}
 
       {loading && <Spinner label="Cargando cotizaciones" />}
       {error && <Banner kind="error">{error}</Banner>}
 
       {data && data.content.length === 0 && (
         <EmptyState>
-          {filter === 'PENDIENTE'
-            ? 'No hay cotizaciones sin responder. Buen trabajo.'
-            : 'No hay cotizaciones en este estado.'}
+          {textoBuscado || desde || hasta
+            ? 'Ninguna cotización coincide con la búsqueda.'
+            : filter === 'PENDIENTE'
+              ? 'No hay cotizaciones sin responder. Buen trabajo.'
+              : 'No hay cotizaciones en este estado.'}
         </EmptyState>
       )}
 

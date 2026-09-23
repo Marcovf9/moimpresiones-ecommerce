@@ -94,6 +94,22 @@ async function request<T>(path: string, init: RequestInit = {}, withAuth = true)
   return response.json() as Promise<T>
 }
 
+export interface FiltrosDeCotizaciones {
+  estado: QuoteStatus | 'TODAS'
+  texto?: string
+  desde?: string
+  hasta?: string
+}
+
+function parametros(filtros: FiltrosDeCotizaciones): URLSearchParams {
+  const params = new URLSearchParams()
+  if (filtros.estado !== 'TODAS') params.set('status', filtros.estado)
+  if (filtros.texto?.trim()) params.set('q', filtros.texto.trim())
+  if (filtros.desde) params.set('desde', filtros.desde)
+  if (filtros.hasta) params.set('hasta', filtros.hasta)
+  return params
+}
+
 export const adminApi = {
   async login(username: string, password: string): Promise<AdminSession> {
     const result = await request<{
@@ -171,10 +187,38 @@ export const adminApi = {
     request<void>(`/api/admin/finishings/${encodeURIComponent(slug)}`, { method: 'DELETE' }),
 
   // Cotizaciones
-  quotes: (status: QuoteStatus | 'TODAS', page = 0) => {
-    const params = new URLSearchParams({ page: String(page), size: '20' })
-    if (status !== 'TODAS') params.set('status', status)
+  quotes: (filtros: FiltrosDeCotizaciones, page = 0) => {
+    const params = parametros(filtros)
+    params.set('page', String(page))
+    params.set('size', '20')
     return request<Page<AdminQuote>>(`/api/admin/quotes?${params}`)
+  },
+
+  /**
+   * Baja la planilla con lo que se esté viendo.
+   *
+   * <p>Pasa por fetch y no por un enlace directo porque la descarga necesita
+   * el token de la sesión, y un <a href> no puede mandarlo.
+   */
+  async descargarPlanilla(filtros: FiltrosDeCotizaciones): Promise<void> {
+    const session = sessionStore.read()
+    if (!session) throw new SessionExpiredError()
+
+    const respuesta = await fetch(`${BASE_URL}/api/admin/quotes/planilla.csv?${parametros(filtros)}`, {
+      headers: { Authorization: `Bearer ${session.token}` },
+    })
+    if (respuesta.status === 401) {
+      sessionStore.clear()
+      throw new SessionExpiredError()
+    }
+    if (!respuesta.ok) throw new ApiError(respuesta.status, 'No pudimos armar la planilla.')
+
+    const url = URL.createObjectURL(await respuesta.blob())
+    const enlace = document.createElement('a')
+    enlace.href = url
+    enlace.download = `cotizaciones-${new Date().toISOString().slice(0, 10)}.csv`
+    enlace.click()
+    setTimeout(() => URL.revokeObjectURL(url), 10_000)
   },
   updateQuote: (id: number, status: QuoteStatus, internalNotes?: string) =>
     request<AdminQuote>(`/api/admin/quotes/${id}`, {
