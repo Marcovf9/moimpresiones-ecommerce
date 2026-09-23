@@ -5,6 +5,7 @@ import { metaDe } from '../config/paginas'
 import { WhatsAppIcon } from '../components/Icons'
 import { BarraCMYK } from '../components/BarraCMYK'
 import { useContactInfo } from '../hooks/useContactInfo'
+import { registrarCotizacionEnviada } from '../analitica/medicion'
 
 /** Lo que deja el formulario al enviar, para poder abrir o reabrir WhatsApp. */
 export interface EstadoDeConfirmacion {
@@ -36,6 +37,12 @@ export function ConfirmacionPage() {
   usePageMeta(metaDe('/cotizacion-enviada'))
 
   const whatsappDelPedido = state?.whatsappUrl ?? null
+
+  // La conversión se cuenta acá, que es la única pantalla a la que se llega
+  // habiendo enviado el pedido.
+  useEffect(() => {
+    if (state?.whatsappUrl !== undefined) registrarCotizacionEnviada()
+  }, [state?.whatsappUrl])
 
   // Cuando el navegador bloqueó la pestaña, WhatsApp se abre desde acá y no
   // desde el formulario: así esta pantalla llega a cargarse —es la que mide
