@@ -12,18 +12,11 @@ import { ImagenConCarga } from '../components/ImagenConCarga'
 import { ComoTrabajamos } from '../components/ComoTrabajamos'
 import { ComoLlegar } from '../components/ComoLlegar'
 import { useRevelarAlScroll } from '../hooks/useRevelarAlScroll'
-import institucional from '../config/institucional.json'
-
-/**
- * Texto institucional entregado por el cliente ("Quienes somos FINAL.docx").
- *
- * <p>Vive en un JSON, y no acá, porque también lo escribe en el HTML el script
- * que se corre al publicar: es lo primero que lee Google de la portada.
- */
-const { quienesSomos: ABOUT_PARAGRAPHS } = institucional
+import { parrafos, useContenidos } from '../hooks/useContenidos'
 
 export function HomePage() {
   const location = useLocation()
+  const contenidos = useContenidos()
 
   useRevelarAlScroll()
 
@@ -38,7 +31,7 @@ export function HomePage() {
 
   return (
     <>
-      <Hero />
+      <Hero bajada={contenidos.portada_bajada} />
 
       <section id="quienes-somos" data-revelar className="scroll-mt-20 py-14 sm:py-28">
         <div className="mx-auto max-w-3xl px-6">
@@ -50,13 +43,13 @@ export function HomePage() {
           </h2>
 
           <div className="mt-6 space-y-4 leading-relaxed text-ink-100 sm:mt-8 sm:space-y-5 sm:text-lg">
-            {ABOUT_PARAGRAPHS.map((paragraph) => (
-              <p key={paragraph.slice(0, 40)}>{paragraph}</p>
+            {parrafos(contenidos.quienes_somos).map((parrafo) => (
+              <p key={parrafo.slice(0, 40)}>{parrafo}</p>
             ))}
           </div>
 
           <p className="mt-8 border-l-4 border-brand-500 pl-5 font-display text-xl text-white italic sm:mt-10 sm:pl-6 sm:text-2xl">
-            Más de tres décadas imprimiendo ideas y construyendo relaciones.
+            {contenidos.frase_destacada}
           </p>
 
           <div className="mt-9 flex flex-wrap gap-3 sm:mt-12 sm:gap-4">
@@ -168,7 +161,7 @@ function RubrosDestacados() {
  * degradado sobre el fondo oscuro y la portada se ve entera igual: el texto
  * nunca depende de que la foto cargue.
  */
-function Hero() {
+function Hero({ bajada }: { bajada: string }) {
   return (
     <section className="relative grid min-h-dvh place-items-center overflow-hidden bg-ink-900">
       {/* La foto pesa 345 KB en JPG: en WebP baja a 131 KB, y en telefono se
@@ -206,10 +199,7 @@ function Hero() {
           MO Impresiones
         </h1>
         <BarraCMYK className="mx-auto mt-6 max-w-40" grosor="gruesa" />
-        <p className="mx-auto mt-5 max-w-xl text-ink-100 sm:mt-6 sm:text-lg">
-          Imprenta en Córdoba, Argentina. Más de 30 años de oficio gráfico,
-          del pliego a la terminación final.
-        </p>
+        <p className="mx-auto mt-5 max-w-xl text-ink-100 sm:mt-6 sm:text-lg">{bajada}</p>
         <a
           href="#quienes-somos"
           className="mt-10 inline-flex items-center gap-2 rounded-full border border-white/40 px-7 py-3 font-medium text-white transition hover:bg-white hover:text-ink-900"

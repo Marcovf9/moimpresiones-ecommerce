@@ -90,3 +90,11 @@ export function IconoDescargar(props: Props) {
     </Svg>
   )
 }
+
+export function IconoTextos(props: Props) {
+  return (
+    <Svg {...props}>
+      <path d="M4 6h16M4 11h16M4 16h10" />
+    </Svg>
+  )
+}

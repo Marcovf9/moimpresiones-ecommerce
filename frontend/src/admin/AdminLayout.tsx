@@ -8,6 +8,7 @@ import {
   IconoReportes,
   IconoRubros,
   IconoTerminaciones,
+  IconoTextos,
 } from './components/IconosAdmin'
 import { MenuIcon } from '../components/Icons'
 
@@ -18,6 +19,7 @@ const SECCIONES = [
   { to: '/admin/productos', label: 'Productos', icono: IconoProductos },
   { to: '/admin/rubros', label: 'Rubros', icono: IconoRubros },
   { to: '/admin/terminaciones', label: 'Terminaciones', icono: IconoTerminaciones },
+  { to: '/admin/textos', label: 'Textos del sitio', icono: IconoTextos },
 ]
 
 /**

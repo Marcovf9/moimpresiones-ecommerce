@@ -367,6 +367,13 @@ async function fichasDesde(categorias) {
   return fichas
 }
 
+/** Los textos que el dueno edita desde el panel. */
+async function textosDelSitio() {
+  const respuesta = await fetch(`${API}/api/contenidos`, { signal: AbortSignal.timeout(20_000) })
+  if (!respuesta.ok) throw new Error(`La API respondio ${respuesta.status}`)
+  return respuesta.json()
+}
+
 /** Las terminaciones, para el resumen de esa pantalla. */
 async function listaDeTerminaciones() {
   const respuesta = await fetch(`${API}/api/finishings`, { signal: AbortSignal.timeout(20_000) })
@@ -403,6 +410,19 @@ try {
   // La portada muestra los rubros con su foto.
   const portada = destinoDe('/')
   portada.datos = { categorias }
+
+  // El texto institucional sale de la base: si no viniera, la portada
+  // mostraria el respaldo del codigo, que puede estar viejo.
+  try {
+    const contenidos = await textosDelSitio()
+    portada.datos.contenidos = contenidos
+    institucional.quienesSomos = (contenidos.quienes_somos ?? '')
+      .split(/\n\s*\n/)
+      .map((parrafo) => parrafo.trim())
+      .filter(Boolean)
+  } catch (error) {
+    console.warn(`[prerender] Sin los textos del panel: ${error.message}.`)
+  }
   portada.contenido = resumen({
     titulo: portada.titulo,
     descripcion: portada.descripcion,

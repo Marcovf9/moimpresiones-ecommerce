@@ -10,6 +10,7 @@ import type {
   SaveFinishingPayload,
   SaveProductPayload,
   Reporte,
+  TextoEditable,
 } from './adminTypes'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? ''
@@ -185,6 +186,14 @@ export const adminApi = {
     }),
   deleteFinishing: (slug: string) =>
     request<void>(`/api/admin/finishings/${encodeURIComponent(slug)}`, { method: 'DELETE' }),
+
+  // Textos del sitio
+  textos: () => request<TextoEditable[]>('/api/admin/contenidos'),
+  guardarTexto: (clave: string, valor: string) =>
+    request<TextoEditable>(`/api/admin/contenidos/${encodeURIComponent(clave)}`, {
+      method: 'PUT',
+      body: JSON.stringify({ valor }),
+    }),
 
   // Cotizaciones
   quotes: (filtros: FiltrosDeCotizaciones, page = 0) => {

@@ -65,6 +65,9 @@ export const api = {
   search: (term: string) =>
     request<ProductSummary[]>(`/api/search?q=${encodeURIComponent(term)}`),
 
+  /** Textos del sitio que se editan desde el panel. */
+  contenidos: () => request<Record<string, string>>('/api/contenidos'),
+
   finishings: () => request<Finishing[]>('/api/finishings'),
 
   contact: () => request<ContactInfo>('/api/contact'),

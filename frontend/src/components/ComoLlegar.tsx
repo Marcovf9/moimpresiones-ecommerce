@@ -1,4 +1,5 @@
 import { EMPRESA, domicilioCompleto } from '../config/empresa'
+import { useContenidos } from '../hooks/useContenidos'
 import { BarraCMYK } from './BarraCMYK'
 import { Mapa } from './Mapa'
 import { ArrowRightIcon } from './Icons'
@@ -10,6 +11,7 @@ import { ArrowRightIcon } from './Icons'
  * mapa apuntando a cualquier lado.
  */
 export function ComoLlegar() {
+  const contenidos = useContenidos()
   const domicilio = domicilioCompleto()
   if (!domicilio) return null
 
@@ -26,8 +28,8 @@ export function ComoLlegar() {
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_minmax(0,1.3fr)]">
           <div>
             <p className="font-display text-lg text-white">{domicilio}</p>
-            {EMPRESA.horarioAtencion && (
-              <p className="mt-2 text-ink-300">{EMPRESA.horarioAtencion}</p>
+            {contenidos.horario_atencion && (
+              <p className="mt-2 text-ink-300">{contenidos.horario_atencion}</p>
             )}
 
             {/* Que envían a todo el país es un dato que amplía el público del
