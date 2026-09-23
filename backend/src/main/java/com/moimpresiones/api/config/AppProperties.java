@@ -35,6 +35,21 @@ public class AppProperties {
     /** Avisos por correo al equipo de la imprenta. */
     public static class Notificaciones {
 
+        /**
+         * Horas que espera un pedido sin responder antes de que se avise de
+         * nuevo. En cero, no se manda ningun recordatorio.
+         */
+        private int recordatorioHoras = 24;
+
+        public int getRecordatorioHoras() {
+            return recordatorioHoras;
+        }
+
+        public void setRecordatorioHoras(int recordatorioHoras) {
+            this.recordatorioHoras = recordatorioHoras;
+        }
+
+
         private String emailDestino = "";
 
         /** Si queda vacio se usa la cuenta con la que se autentica el SMTP. */

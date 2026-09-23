@@ -37,8 +37,8 @@ The site is live, serving the business, with its own domain, HTTPS and email not
 
 - **Catalog** of 22 products across 6 categories, and 9 finishing techniques, each with photos and
   a spec sheet (materials, sizes, minimum runs, available finishes).
-- **Search and filters** by finishing and material, accent-insensitive and typo-tolerant: `comics`
-  finds *Cómics*, `troquelado` finds every product that offers die-cutting.
+- **Search** in the catalog itself, plus filters by finishing and material — accent-insensitive and
+  typo-tolerant: `comics` finds *Cómics*, `troquelado` finds every product that offers die-cutting.
 - **Multi-product quote requests** with file attachments (PDF, JPG, PNG). Submitting saves the
   request, emails the owner and opens WhatsApp with the message already written.
 - **FAQ, terms, privacy policy and a map** with the shop location.
@@ -126,6 +126,12 @@ continuity resets when the server restarts — an acceptable trade for a shop's 
 Google Analytics and Google Maps were rejected for the same reason; the map uses Leaflet and
 OpenStreetMap tiles.
 
+**A second email, because the first one gets missed.** The alert on a new quote arrives once; if the
+owner is at the press that afternoon, the request sits in the panel and the customer calls another
+print shop. A scheduled job re-sends anything still unanswered after 24 hours — one email listing
+all of them, not one per request, because three notifications in a row read as spam — and marks each
+so it is never repeated. A failed send is not marked, so the next pass retries it.
+
 **Email alerts that cannot slow down or break a quote.** The API publishes an event and a
 `@TransactionalEventListener(AFTER_COMMIT)` sends the email on an `@Async` thread. The customer's
 request is already committed and the response already sent, so a slow or unreachable SMTP server
@@ -194,7 +200,7 @@ against the actual background luminance rather than assumed.
 | Maps | Leaflet + OpenStreetMap, lazy-loaded |
 | Email | Spring Mail over SMTP, async after commit |
 | Hosting | Render (API + PostgreSQL, Docker), Netlify (SPA) |
-| Tests | JUnit 5 (40), Vitest + Testing Library (19), GitHub Actions |
+| Tests | JUnit 5 (45), Vitest + Testing Library (19), GitHub Actions |
 | Ops | Actuator health check, WebP assets, CSP and security headers |
 
 Roughly 5,700 lines of Java across 87 classes and 7,000 lines of TypeScript across 61 files.
@@ -215,7 +221,7 @@ backend/                 Spring Boot REST API
     notificaciones/      email alerts for new quotes
     seo/                 sitemap.xml and robots.txt from the live catalog
     contenido/           site texts the owner edits from the panel
-  src/main/resources/db/migration/   Flyway V1–V12
+  src/main/resources/db/migration/   Flyway V1–V13
 frontend/                React SPA
   src/pages/             public pages
   src/admin/             admin panel (code-split bundle)
@@ -250,7 +256,7 @@ Cloudinary credentials, SMTP and contact details. See [`.env.ejemplo`](.env.ejem
 ## Tests
 
 ```bash
-cd backend  && ./mvnw test   # 40 JUnit tests
+cd backend  && ./mvnw test   # 45 JUnit tests
 cd frontend && npm test      # 19 Vitest tests
 ```
 
