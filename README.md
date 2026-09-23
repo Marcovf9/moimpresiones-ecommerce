@@ -50,7 +50,12 @@ The site is live, serving the business, with its own domain, HTTPS and email not
 - **Dashboard** with KPIs, pending tasks, weekly quote volume and most requested products.
 - **Catalog editor**: products, categories, finishings, spec sheets, and photo uploads that can be
   reordered, so the owner picks which shot is the cover.
-- **Quote inbox** with statuses, notes and secure attachment downloads.
+- **Quote inbox** with statuses, internal notes and secure attachment downloads, searchable by
+  name, company, phone, email or requested product — accent-insensitive, because the owner types
+  `panaderia` and the customer is `Panadería del Centro` — filterable by date range, and
+  downloadable as a spreadsheet.
+- **Site texts**: the opening hours, the company story and the home page copy are edited here
+  instead of living in the code, where changing a comma meant a deploy.
 - **Traffic reports** over a custom date range: visits, unique visitors, most visited pages and most
   viewed products.
 
@@ -136,6 +141,11 @@ persistent disk and served only through an authenticated admin endpoint that str
 and login throttling counted per username *and* per IP at once: per username alone lets anyone lock
 the owner out on purpose; per IP alone is bypassed with a handful of addresses.
 
+**A spreadsheet export that cannot execute.** The quote inbox exports to CSV, and Excel treats a
+cell starting with `=`, `+`, `-` or `@` as a formula — a customer typing "-500 unidades" in a
+comment is enough to produce a file that does something on open. Every cell is quoted and those
+prefixes are escaped.
+
 **Public write endpoints capped by a sliding window.** Asking for a quote needs no account and no
 captcha, on purpose: every extra step loses a real customer. The cost is that a script can fill the
 owner's inbox and the disk, so quote submissions and uploads are capped per IP per hour. The window
@@ -184,7 +194,7 @@ against the actual background luminance rather than assumed.
 | Maps | Leaflet + OpenStreetMap, lazy-loaded |
 | Email | Spring Mail over SMTP, async after commit |
 | Hosting | Render (API + PostgreSQL, Docker), Netlify (SPA) |
-| Tests | JUnit 5, Vitest + Testing Library, GitHub Actions |
+| Tests | JUnit 5 (40), Vitest + Testing Library (19), GitHub Actions |
 | Ops | Actuator health check, WebP assets, CSP and security headers |
 
 Roughly 5,700 lines of Java across 87 classes and 7,000 lines of TypeScript across 61 files.
@@ -204,7 +214,8 @@ backend/                 Spring Boot REST API
     security/            JWT, login throttling, password policy
     notificaciones/      email alerts for new quotes
     seo/                 sitemap.xml and robots.txt from the live catalog
-  src/main/resources/db/migration/   Flyway V1–V11
+    contenido/           site texts the owner edits from the panel
+  src/main/resources/db/migration/   Flyway V1–V12
 frontend/                React SPA
   src/pages/             public pages
   src/admin/             admin panel (code-split bundle)
@@ -239,8 +250,8 @@ Cloudinary credentials, SMTP and contact details. See [`.env.ejemplo`](.env.ejem
 ## Tests
 
 ```bash
-cd backend  && ./mvnw test   # 33 JUnit tests
-cd frontend && npm test      # 14 Vitest tests
+cd backend  && ./mvnw test   # 40 JUnit tests
+cd frontend && npm test      # 19 Vitest tests
 ```
 
 The backend tests cover the pieces where a mistake is silent or expensive: the WhatsApp message
