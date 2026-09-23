@@ -58,7 +58,7 @@ function reemplazar(html, patron, reemplazo) {
   return html.replace(patron, reemplazo)
 }
 
-function armarHtml(base, { titulo, descripcion, ruta, imagen, contenido, datos }) {
+function armarHtml(base, { titulo, descripcion, ruta, imagen, contenido, datos, sinIndexar }) {
   const tituloCompleto = titulo === SUFIJO ? titulo : `${titulo} — ${SUFIJO}`
   const url = `${SITIO}${ruta}`
   let html = base
@@ -107,6 +107,15 @@ function armarHtml(base, { titulo, descripcion, ruta, imagen, contenido, datos }
     html = html
       .replace(/\s*<meta property="og:image:width" content="[^"]*" \/>/, '')
       .replace(/\s*<meta property="og:image:height" content="[^"]*" \/>/, '')
+  }
+
+  if (sinIndexar) {
+    // La pantalla de "cotizacion enviada" no es contenido del sitio: sale del
+    // formulario y aparecer en una busqueda no tendria sentido.
+    html = html.replace(
+      '<title>',
+      '<meta name="robots" content="noindex, follow" />\n    <title>',
+    )
   }
 
   if (contenido) {
@@ -310,6 +319,7 @@ const destinos = Object.entries(paginas).map(([ruta, pagina]) => ({
   ruta,
   titulo: pagina.titulo,
   descripcion: pagina.descripcion,
+  sinIndexar: pagina.sinIndexar,
   contenido: resumen({ titulo: pagina.titulo, descripcion: pagina.descripcion }),
 }))
 
