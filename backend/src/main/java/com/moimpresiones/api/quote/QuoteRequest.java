@@ -48,6 +48,10 @@ public class QuoteRequest {
     @Column(name = "answered_at")
     private Instant answeredAt;
 
+    /** Cuando se aviso que seguia sin responder. Null: todavia no se aviso. */
+    @Column(name = "recordatorio_enviado_en")
+    private Instant recordatorioEnviadoEn;
+
     @OneToMany(mappedBy = "quote", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("displayOrder ASC, id ASC")
     private List<QuoteItem> items = new ArrayList<>();
@@ -179,5 +183,13 @@ public class QuoteRequest {
 
     public void setAttachments(List<QuoteAttachment> attachments) {
         this.attachments = attachments;
+    }
+
+    public Instant getRecordatorioEnviadoEn() {
+        return recordatorioEnviadoEn;
+    }
+
+    public void setRecordatorioEnviadoEn(Instant recordatorioEnviadoEn) {
+        this.recordatorioEnviadoEn = recordatorioEnviadoEn;
     }
 }

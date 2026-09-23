@@ -65,6 +65,14 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
 
     long countByStatus(QuoteStatus status);
 
+    /**
+     * Pedidos que siguen sin responder desde hace rato y por los que todavia
+     * no se aviso. Se ordenan del mas viejo al mas nuevo, que es el orden en
+     * que conviene atenderlos.
+     */
+    List<QuoteRequest> findByStatusAndRecordatorioEnviadoEnIsNullAndCreatedAtBeforeOrderByCreatedAtAsc(
+            QuoteStatus status, Instant limite);
+
     long countByCreatedAtAfter(Instant moment);
 
     long countByCreatedAtBetween(Instant desde, Instant hasta);
