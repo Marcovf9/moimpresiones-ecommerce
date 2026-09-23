@@ -8,7 +8,8 @@ import { WhatsAppFab } from './WhatsAppFab'
 import { AvisoDeCookies } from './AvisoDeCookies'
 import { StructuredData } from './StructuredData'
 import { BarraCMYK } from './BarraCMYK'
-import { domicilioCompleto, EMPRESA } from '../config/empresa'
+import { domicilioCompleto } from '../config/empresa'
+import { useContenidos } from '../hooks/useContenidos'
 
 export function Layout() {
   useTrackPageView()
@@ -87,6 +88,7 @@ export function Layout() {
 
 function SiteFooter() {
   const contact = useContactInfo()
+  const contenidos = useContenidos()
 
   return (
     <footer className="bg-ink-900 text-ink-300">
@@ -104,8 +106,8 @@ function SiteFooter() {
             Empresa gráfica familiar de Córdoba, Argentina. Más de 30 años imprimiendo ideas.
           </p>
           {domicilioCompleto() && <p className="mt-3 text-sm">{domicilioCompleto()}</p>}
-          {EMPRESA.horarioAtencion && (
-            <p className="mt-1 text-sm">{EMPRESA.horarioAtencion}</p>
+          {contenidos.horario_atencion && (
+            <p className="mt-1 text-sm">{contenidos.horario_atencion}</p>
           )}
         </div>
 

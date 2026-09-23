@@ -138,3 +138,11 @@ export interface Reporte {
   productos: FilaReporte[]
   origenes: FilaReporte[]
 }
+
+/** Un texto del sitio editable desde el panel. */
+export interface TextoEditable {
+  clave: string
+  titulo: string
+  ayuda: string
+  valor: string
+}
