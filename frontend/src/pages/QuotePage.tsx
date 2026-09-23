@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ApiError, api } from '../api/client'
-import type { Category, QuoteAttachmentValues, QuoteCreated } from '../api/types'
+import type { Category, QuoteAttachmentValues } from '../api/types'
 import { useApi } from '../hooks/useApi'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { metaDe } from '../config/paginas'
@@ -9,6 +9,7 @@ import { imagenOptimizada } from '../api/imagenes'
 import { itemVacio, usePresupuesto, MAX_ITEMS } from '../hooks/usePresupuesto'
 import { PageHeader } from '../components/PageChrome'
 import { WhatsAppIcon } from '../components/Icons'
+import type { EstadoDeConfirmacion } from './ConfirmacionPage'
 
 interface Contacto {
   fullName: string
@@ -23,7 +24,6 @@ const CONTACTO_VACIO: Contacto = { fullName: '', phone: '', email: '', company: 
 type Estado =
   | { kind: 'idle' }
   | { kind: 'sending' }
-  | { kind: 'sent'; resultado: QuoteCreated }
 
 export function QuotePage() {
   const [searchParams] = useSearchParams()
@@ -35,6 +35,7 @@ export function QuotePage() {
   const [estado, setEstado] = useState<Estado>({ kind: 'idle' })
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null)
+  const navegar = useNavigate()
 
   usePageMeta(metaDe('/cotiza'))
 
@@ -62,6 +63,11 @@ export function QuotePage() {
     setFieldErrors({})
     setErrorGeneral(null)
 
+    // La pestaña se abre acá, dentro del toque del visitante, y recién se le
+    // pone la dirección cuando el pedido quedó guardado: si se abriera después
+    // de esperar al servidor, el navegador la bloquearía por emergente.
+    const ventanaDeWhatsApp = window.open('', '_blank')
+
     try {
       const resultado = await api.createQuote({
         ...contacto,
@@ -76,10 +82,30 @@ export function QuotePage() {
         })),
         attachments: adjuntos,
       })
-      setEstado({ kind: 'sent', resultado })
       // Recién con el pedido guardado se limpia la lista: si falla, no se pierde.
       vaciar()
+
+      // Con pestaña propia, WhatsApp se abre al lado y el visitante se queda en
+      // la confirmación. Sin ella —hay navegadores que bloquean la pestaña
+      // igual— la abre la pantalla de confirmación una vez montada: primero
+      // tiene que cargar esa pantalla, que es la que cuenta como conversión, y
+      // recién después irse a WhatsApp.
+      const seAbrioAlLado = Boolean(ventanaDeWhatsApp) && Boolean(resultado.whatsappUrl)
+      if (seAbrioAlLado) {
+        ventanaDeWhatsApp!.location.href = resultado.whatsappUrl!
+      } else {
+        ventanaDeWhatsApp?.close()
+      }
+
+      navegar('/cotizacion-enviada', {
+        replace: true,
+        state: {
+          whatsappUrl: resultado.whatsappUrl,
+          abrirWhatsApp: !seAbrioAlLado && Boolean(resultado.whatsappUrl),
+        } satisfies EstadoDeConfirmacion,
+      })
     } catch (error) {
+      ventanaDeWhatsApp?.close()
       setEstado({ kind: 'idle' })
       if (error instanceof ApiError) {
         setFieldErrors(error.fieldErrors)
@@ -88,10 +114,6 @@ export function QuotePage() {
         setErrorGeneral('No pudimos enviar tu pedido. Probá de nuevo.')
       }
     }
-  }
-
-  if (estado.kind === 'sent') {
-    return <PanelEnviado resultado={estado.resultado} />
   }
 
   const sinProductos = items.length === 0
@@ -279,18 +301,22 @@ export function QuotePage() {
           </p>
         )}
 
+        {/* Un solo paso: guarda el pedido y abre WhatsApp con el mensaje
+            escrito. Antes había una pantalla en el medio que había que tocar
+            otra vez, y ahí se perdía gente que ya había completado todo. */}
         <button
           type="submit"
           disabled={estado.kind === 'sending' || sinProductos}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-8 py-4 font-medium text-ink-900 transition hover:bg-ink-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-8 py-4 font-medium text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {estado.kind === 'sending' ? 'Enviando...' : 'Pedir presupuesto'}
+          <WhatsAppIcon className="size-5" />
+          {estado.kind === 'sending' ? 'Enviando...' : 'Enviar por WhatsApp'}
         </button>
-        {sinProductos && (
-          <p className="text-center text-sm text-ink-300">
-            Agregá al menos un producto para poder enviar.
-          </p>
-        )}
+        <p className="text-center text-sm text-ink-300">
+          {sinProductos
+            ? 'Agregá al menos un producto para poder enviar.'
+            : 'Se abre WhatsApp con tu pedido ya escrito. Nos queda registrado igual.'}
+        </p>
       </form>
     </div>
   )
@@ -460,36 +486,3 @@ function Adjuntos({
   )
 }
 
-function PanelEnviado({ resultado }: { resultado: QuoteCreated }) {
-  return (
-    <div className="grid min-h-[70dvh] place-items-center px-6 pt-24 text-center">
-      <div className="max-w-md">
-        <h1 className="font-display text-3xl font-semibold text-white">¡Recibimos tu pedido!</h1>
-        <p className="mt-3 text-ink-100">
-          Ya lo tenemos registrado. Para que llegue más rápido, mandanos también el mensaje por
-          WhatsApp: se abre con todo lo que cargaste ya escrito.
-        </p>
-
-        {resultado.whatsappUrl ? (
-          <a
-            href={resultado.whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-7 py-3 font-medium text-white transition hover:brightness-95"
-          >
-            <WhatsAppIcon className="size-5" />
-            Enviar por WhatsApp
-          </a>
-        ) : (
-          <p className="mt-8 text-ink-100">Te vamos a estar contactando a la brevedad.</p>
-        )}
-
-        <div className="mt-6">
-          <Link to="/productos" className="text-sm text-ink-300 underline hover:text-white">
-            Seguir viendo productos
-          </Link>
-        </div>
-      </div>
-    </div>
-  )
-}

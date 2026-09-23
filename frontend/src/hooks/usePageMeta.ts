@@ -4,6 +4,8 @@ import { EMPRESA } from '../config/empresa'
 interface PageMeta {
   title: string
   description: string
+  /** Deja la pantalla fuera de los buscadores. */
+  noIndexar?: boolean
   /** Ruta canónica, sin el dominio. Ej: '/productos/estuches' */
   path?: string
   /** Imagen para cuando el enlace se comparte por WhatsApp o redes. */
@@ -22,7 +24,7 @@ const IMAGEN_POR_DEFECTO = '/imagenes/og.jpg'
  * comparten mal en WhatsApp, que es por donde llega buena parte del tráfico.
  * Google ejecuta JavaScript, así que lee estos valores igual.
  */
-export function usePageMeta({ title, description, path, image }: PageMeta) {
+export function usePageMeta({ title, description, path, image, noIndexar }: PageMeta) {
   useEffect(() => {
     const imagen = image ?? IMAGEN_POR_DEFECTO
     const tituloCompleto = title === SUFIJO ? title : `${title} — ${SUFIJO}`
@@ -34,6 +36,14 @@ export function usePageMeta({ title, description, path, image }: PageMeta) {
     setMeta('property', 'og:type', 'website')
     setMeta('property', 'og:site_name', SUFIJO)
     setMeta('name', 'twitter:card', 'summary_large_image')
+
+    // Es una sola pagina: la etiqueta hay que sacarla al salir de la pantalla
+    // que no se indexa, o se la lleva puesta el resto del sitio.
+    if (noIndexar) {
+      setMeta('name', 'robots', 'noindex, follow')
+    } else {
+      document.head.querySelector('meta[name="robots"]')?.remove()
+    }
 
     // Sin dominio configurado no publicamos URLs absolutas rotas.
     if (EMPRESA.sitioWeb && path) {
@@ -57,7 +67,7 @@ export function usePageMeta({ title, description, path, image }: PageMeta) {
         document.head.querySelector('meta[property="og:image:height"]')?.remove()
       }
     }
-  }, [title, description, path, image])
+  }, [title, description, path, image, noIndexar])
 }
 
 function setMeta(attr: 'name' | 'property', key: string, content: string) {

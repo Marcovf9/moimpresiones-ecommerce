@@ -13,7 +13,7 @@
   },
   "/cotiza": {
     "titulo": "Cotizá tu proyecto",
-    "descripcion": "Contanos qué necesitás imprimir y te respondemos con un presupuesto a medida. Podés pedir por varios productos a la vez."
+    "descripcion": "Contanos qué necesitás imprimir y te respondemos con un presupuesto a medida. Se envía por WhatsApp, con tu pedido ya escrito."
   },
   "/preguntas-frecuentes": {
     "titulo": "Preguntas frecuentes",
@@ -26,5 +26,10 @@
   "/privacidad": {
     "titulo": "Política de privacidad",
     "descripcion": "Qué datos personales recolecta MO Impresiones a través del sitio, para qué los usa y cómo ejercer tus derechos."
+  },
+  "/cotizacion-enviada": {
+    "titulo": "Cotización enviada",
+    "descripcion": "Recibimos tu pedido de presupuesto. Te respondemos a la brevedad.",
+    "sinIndexar": true
   }
 }
