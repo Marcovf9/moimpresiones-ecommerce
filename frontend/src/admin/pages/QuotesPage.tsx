@@ -240,6 +240,29 @@ function QuoteCard({ quote, onChanged }: { quote: AdminQuote; onChanged: () => v
     }
   }
 
+  /**
+   * Borrar es para las pruebas y para el spam. Lo habitual es cerrar la
+   * cotización, que la deja fuera de la bandeja pero la conserva: el historial
+   * de quién pidió qué vale, y de acá no se vuelve.
+   */
+  async function borrar() {
+    const seguro = window.confirm(
+      `¿Borrar la cotización de ${quote.fullName}? Se borran también sus archivos adjuntos. ` +
+        'No se puede deshacer.',
+    )
+    if (!seguro) return
+
+    setSaving(true)
+    setError(null)
+    try {
+      await adminApi.deleteQuote(quote.id)
+      onChanged()
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'No pudimos borrarla.')
+      setSaving(false)
+    }
+  }
+
 
   return (
     <li>
@@ -349,6 +372,15 @@ function QuoteCard({ quote, onChanged }: { quote: AdminQuote; onChanged: () => v
               Reabrir
             </Button>
           )}
+
+          <button
+            type="button"
+            disabled={saving}
+            onClick={borrar}
+            className="ml-auto rounded-lg px-3 py-2 text-sm font-medium text-ink-500 transition hover:bg-brand-500/10 hover:text-brand-700 disabled:opacity-50"
+          >
+            Borrar
+          </button>
         </div>
       </Card>
     </li>
