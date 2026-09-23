@@ -1,10 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Category, FiltrosDisponibles, ProductSummary } from '../api/types'
 import { useApi } from '../hooks/useApi'
 import { categoriasDelHtml } from '../api/datosDelHtml'
-import { ArrowRightIcon, CheckIcon, ChevronDownIcon, PlusIcon } from '../components/Icons'
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  PlusIcon,
+  SearchIcon,
+} from '../components/Icons'
 import { PageHeader, ErrorState } from '../components/PageChrome'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { metaDe } from '../config/paginas'
@@ -47,6 +53,16 @@ export function ProductsPage() {
   const hayFiltro = Boolean(filtros.finishing || filtros.material)
   const eligiendo = useModoEleccion()
 
+  // El buscador existía solo dentro del menú, donde casi nadie lo encontraba.
+  const [busqueda, setBusqueda] = useState('')
+  const [termino, setTermino] = useState('')
+  useEffect(() => {
+    // Espera a que deje de escribir: si no, sale una consulta por tecla.
+    const id = setTimeout(() => setTermino(busqueda.trim()), 300)
+    return () => clearTimeout(id)
+  }, [busqueda])
+  const buscando = termino.length >= 2
+
   // Con ?rubro=slug se entra directo a un rubro, que es como llega quien lo
   // elige desde el menú del celular.
   const rubroElegido = searchParams.get('rubro')
@@ -75,12 +91,26 @@ export function ProductsPage() {
         }
       />
 
-      <div className="mx-auto mt-7 max-w-6xl sm:mt-10 space-y-6 px-6">
+      <div className="mx-auto mt-7 max-w-6xl sm:mt-10 space-y-4 px-6">
+        <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white px-4 py-3 focus-within:border-ink-900">
+          <SearchIcon className="size-5 shrink-0 text-ink-500" />
+          <span className="sr-only">Buscar productos</span>
+          <input
+            type="search"
+            value={busqueda}
+            onChange={(evento) => setBusqueda(evento.target.value)}
+            placeholder="Buscar: tarjetas, packaging, troquelado..."
+            className="w-full text-ink-900 placeholder:text-ink-500 focus:outline-none"
+          />
+        </label>
+
         <BarraFiltros elegidos={filtros} onCambio={setFiltros} />
       </div>
 
       <div className="mx-auto mt-6 max-w-6xl px-6">
-        {hayFiltro ? (
+        {buscando ? (
+          <ResultadosDeBusqueda termino={termino} />
+        ) : hayFiltro ? (
           <ResultadosFiltrados filtros={filtros} />
         ) : rubro ? (
           <RubroSolo rubro={rubro} onVerTodos={() => setSearchParams({})} />
@@ -131,6 +161,34 @@ function ResultadosFiltrados({ filtros }: { filtros: FiltrosElegidos }) {
       {!loading && data && data.length === 0 ? (
         <p className="rounded-xl border border-dashed border-white/30 px-6 py-8 text-center text-ink-300">
           No hay productos con esa combinación. Probá con un solo filtro.
+        </p>
+      ) : (
+        data && <ProductGrid products={data} />
+      )}
+    </section>
+  )
+}
+
+/**
+ * Lo que encontró el buscador.
+ *
+ * <p>Reemplaza a la navegación por rubros mientras se busca, igual que los
+ * filtros: mostrar las dos cosas a la vez confunde más de lo que ayuda.
+ */
+function ResultadosDeBusqueda({ termino }: { termino: string }) {
+  const { data, loading } = useApi<ProductSummary[]>(() => api.search(termino), [termino])
+
+  return (
+    <section aria-live="polite">
+      <h2 className="mb-4 font-display text-lg font-semibold text-white">
+        {loading
+          ? 'Buscando...'
+          : `${data?.length ?? 0} ${data?.length === 1 ? 'resultado' : 'resultados'} para «${termino}»`}
+      </h2>
+      {!loading && data && data.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-white/30 px-6 py-8 text-center text-ink-300">
+          No encontramos nada con esa palabra. Probá con el nombre del producto, el material o una
+          terminación.
         </p>
       ) : (
         data && <ProductGrid products={data} />

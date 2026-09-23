@@ -169,6 +169,11 @@ a `main`.
 > `render.yaml` limita los despliegues a los cambios de `backend/**`; un cambio
 > del frontend solo republica Netlify, que no corta nada.
 
+> **Recordatorio de cotizaciones sin responder:** si un pedido lleva 24 horas
+> en «sin responder», el backend manda un mail con todos los pendientes, una
+> sola vez por pedido. Se ajusta con `NOTIFICACIONES_RECORDATORIO_HORAS` (en 0
+> se apaga) y necesita el correo configurado.
+
 ### 3. Monitoreo
 
 El backend publica `/actuator/health`, que es lo que consulta Render para saber

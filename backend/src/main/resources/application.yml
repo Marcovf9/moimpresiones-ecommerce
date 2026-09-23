@@ -83,6 +83,9 @@ app:
   notificaciones:
     email-destino: ${NOTIFICACIONES_DESTINO:contacto@moimpresiones.com}
     email-remitente: ${NOTIFICACIONES_REMITENTE:}
+    # Horas que espera un pedido sin responder antes de que se vuelva a avisar.
+    # En 0 se apaga el recordatorio.
+    recordatorio-horas: ${NOTIFICACIONES_RECORDATORIO_HORAS:24}
 
   jwt:
     # EN PRODUCCION: definir JWT_SECRET (minimo 32 caracteres) como variable de entorno
