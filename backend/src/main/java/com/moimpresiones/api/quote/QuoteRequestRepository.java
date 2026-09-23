@@ -11,9 +11,57 @@ import org.springframework.data.repository.query.Param;
 
 public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long> {
 
+    /**
+     * Condiciones de la bandeja del panel: estado, rango de fechas y texto,
+     * todos opcionales y combinables.
+     *
+     * <p>Va en SQL y no en JPQL por unaccent: el dueno busca "panaderia" y la
+     * empresa se llama "Panaderia del Centro" con tilde. Sin eso, la busqueda
+     * no encuentra nada y parece rota.
+     *
+     * <p>El texto busca tambien en el nombre del producto pedido, que es como
+     * uno se acuerda de una cotizacion ("la de las carpetas de la semana
+     * pasada"). DISTINCT porque un pedido de tres productos apareceria tres
+     * veces.
+     */
+    String CONDICIONES = """
+            FROM quote_requests q
+            LEFT JOIN quote_items i ON i.quote_id = q.id
+            WHERE (CAST(:status AS text) IS NULL OR q.status = :status)
+              AND (CAST(:desde AS timestamptz) IS NULL OR q.created_at >= :desde)
+              AND (CAST(:hasta AS timestamptz) IS NULL OR q.created_at < :hasta)
+              AND (CAST(:texto AS text) IS NULL
+                   OR lower(unaccent(q.full_name)) LIKE :texto
+                   OR q.phone LIKE :texto
+                   OR lower(unaccent(coalesce(q.email, ''))) LIKE :texto
+                   OR lower(unaccent(coalesce(q.company, ''))) LIKE :texto
+                   OR lower(unaccent(coalesce(i.product_name, ''))) LIKE :texto)
+            """;
+
+    String BUSQUEDA = "SELECT DISTINCT q.* " + CONDICIONES + " ORDER BY q.created_at DESC";
+
+    String CONTEO = "SELECT COUNT(DISTINCT q.id) " + CONDICIONES;
+
     Page<QuoteRequest> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     Page<QuoteRequest> findByStatusOrderByCreatedAtDesc(QuoteStatus status, Pageable pageable);
+
+    /** La bandeja del panel, paginada. */
+    @Query(value = BUSQUEDA, countQuery = CONTEO, nativeQuery = true)
+    Page<QuoteRequest> buscar(
+            @Param("status") String status,
+            @Param("desde") Instant desde,
+            @Param("hasta") Instant hasta,
+            @Param("texto") String texto,
+            Pageable pageable);
+
+    /** La misma busqueda sin paginar: es lo que se baja como planilla. */
+    @Query(value = BUSQUEDA, nativeQuery = true)
+    List<QuoteRequest> buscarTodas(
+            @Param("status") String status,
+            @Param("desde") Instant desde,
+            @Param("hasta") Instant hasta,
+            @Param("texto") String texto);
 
     long countByStatus(QuoteStatus status);
 
