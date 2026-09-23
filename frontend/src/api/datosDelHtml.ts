@@ -19,6 +19,7 @@ interface DatosDelHtml {
   categorias?: Category[]
   terminaciones?: Finishing[]
   producto?: ProductDetail
+  contenidos?: Record<string, string>
 }
 
 function leer(): DatosDelHtml {
@@ -35,6 +36,7 @@ function leer(): DatosDelHtml {
 const DATOS = leer()
 
 export const categoriasDelHtml = DATOS.categorias ?? null
+export const contenidosDelHtml = DATOS.contenidos ?? null
 export const terminacionesDelHtml = DATOS.terminaciones ?? null
 
 /** El producto embebido, solo si es el de esta dirección. */

@@ -9,6 +9,7 @@ import { ProductsPage } from './pages/ProductsPage'
 import { ProductEditorPage } from './pages/ProductEditorPage'
 import { CategoriesPage } from './pages/CategoriesPage'
 import { FinishingsPage } from './pages/FinishingsPage'
+import { TextosPage } from './pages/TextosPage'
 
 /** Panel de administracion. Todo lo de aca adentro exige sesion iniciada. */
 export function AdminApp() {
@@ -36,6 +37,7 @@ function AdminRoutes() {
         <Route path="productos/:slug" element={<ProductEditorPage />} />
         <Route path="rubros" element={<CategoriesPage />} />
         <Route path="terminaciones" element={<FinishingsPage />} />
+        <Route path="textos" element={<TextosPage />} />
       </Route>
     </Routes>
   )
