@@ -58,7 +58,7 @@ function reemplazar(html, patron, reemplazo) {
   return html.replace(patron, reemplazo)
 }
 
-function armarHtml(base, { titulo, descripcion, ruta, imagen, contenido, datos, sinIndexar }) {
+function armarHtml(base, { titulo, descripcion, ruta, imagen, contenido, datos, sinIndexar, ld }) {
   const tituloCompleto = titulo === SUFIJO ? titulo : `${titulo} — ${SUFIJO}`
   const url = `${SITIO}${ruta}`
   let html = base
@@ -107,6 +107,10 @@ function armarHtml(base, { titulo, descripcion, ruta, imagen, contenido, datos, 
     html = html
       .replace(/\s*<meta property="og:image:width" content="[^"]*" \/>/, '')
       .replace(/\s*<meta property="og:image:height" content="[^"]*" \/>/, '')
+  }
+
+  if (ld) {
+    html = html.replace('  </head>', `    ${bloquesLd(ld)}\n  </head>`)
   }
 
   if (sinIndexar) {
@@ -262,6 +266,62 @@ function cuerpoDeProducto(producto, categoria) {
       )}</p>`
 }
 
+/**
+ * Datos estructurados de una ficha de producto.
+ *
+ * <p>Dos cosas distintas: las migas de navegacion, que Google muestra arriba
+ * del resultado en lugar de la direccion cruda, y el producto en si, que le
+ * dice a Google que la foto pertenece a una pieza impresa de esta imprenta y
+ * no es una imagen suelta.
+ *
+ * <p>No se declara precio porque no se publican precios: el presupuesto
+ * depende de cantidad, papel y terminaciones. Sin precio Google no muestra la
+ * tarjeta con estrellas, pero igual entiende de que es la pagina.
+ */
+function datosDeProducto(producto, categoria) {
+  const url = `${SITIO}/productos/${producto.slug}`
+
+  const migas = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITIO },
+      { '@type': 'ListItem', position: 2, name: 'Productos', item: `${SITIO}/productos` },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: categoria.name,
+        item: `${SITIO}/productos?rubro=${categoria.slug}`,
+      },
+      { '@type': 'ListItem', position: 4, name: producto.name, item: url },
+    ],
+  }
+
+  const ficha = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: producto.name,
+    description: producto.summary ?? undefined,
+    image: producto.coverImageUrl ?? undefined,
+    category: categoria.name,
+    url,
+    brand: { '@type': 'Brand', name: 'MO Impresiones' },
+    manufacturer: { '@type': 'Organization', name: 'MO Impresiones', url: SITIO },
+  }
+
+  return [migas, ficha]
+}
+
+/** Los bloques de schema.org de una pagina, listos para insertar en el HTML. */
+function bloquesLd(bloques) {
+  return bloques
+    .map(
+      (bloque) =>
+        `<script type="application/ld+json">${JSON.stringify(bloque).replaceAll('</', '<\\/')}</script>`,
+    )
+    .join('')
+}
+
 /** La ficha completa de un producto, con su ficha tecnica. */
 async function detalleDe(slug) {
   try {
@@ -291,6 +351,7 @@ async function fichasDesde(categorias) {
           descripcion,
           cuerpo: cuerpoDeProducto(producto, categoria),
         }),
+        ld: datosDeProducto(producto, categoria),
       }
     }),
   )

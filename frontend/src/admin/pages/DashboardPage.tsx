@@ -17,9 +17,27 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-2xl font-semibold text-ink-900">Inicio</h1>
-        <p className="mt-1 text-ink-500">Cómo viene el mes y qué conviene resolver.</p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-semibold text-ink-900">Inicio</h1>
+          <p className="mt-1 text-ink-500">Cómo viene el mes y qué conviene resolver.</p>
+        </div>
+
+        {/* Los dos caminos de todos los días, sin pasar por el menú. */}
+        <div className="flex flex-wrap gap-2">
+          <Link
+            to="/admin/cotizaciones"
+            className="rounded-lg bg-ink-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-ink-700"
+          >
+            Ver cotizaciones
+          </Link>
+          <Link
+            to="/admin/productos/nuevo"
+            className="rounded-lg border border-ink-300 px-4 py-2 text-sm font-medium text-ink-900 transition hover:border-ink-900"
+          >
+            Cargar producto
+          </Link>
+        </div>
       </div>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -154,19 +172,23 @@ function Kpi({
 }) {
   const content = (
     <div
-      className={`h-full rounded-xl border bg-white p-5 transition ${
-        alert ? 'border-brand-500' : 'border-ink-100'
-      } ${to ? 'hover:border-ink-900' : ''}`}
+      className={`h-full rounded-2xl border p-5 transition ${
+        alert ? 'border-brand-500 bg-brand-500/5' : 'border-ink-100 bg-white'
+      } ${to ? 'hover:-translate-y-0.5 hover:border-ink-900 hover:shadow-sm' : ''}`}
     >
       <p className="text-sm text-ink-500">{label}</p>
       <p
-        className={`mt-1 font-display text-3xl font-semibold ${
+        className={`mt-2 font-display text-4xl font-semibold tabular-nums ${
           alert ? 'text-brand-600' : 'text-ink-900'
         }`}
       >
         {value}
       </p>
-      {detail && <p className="mt-1 text-xs text-ink-500">{detail}</p>}
+      {detail && (
+        <p className={`mt-1.5 text-xs ${alert ? 'font-medium text-brand-600' : 'text-ink-500'}`}>
+          {detail}
+        </p>
+      )}
     </div>
   )
   return to ? <Link to={to}>{content}</Link> : content
@@ -224,7 +246,7 @@ function WeeklyChart({ data }: { data: { semana: string; cantidad: number }[] })
           <div key={point.semana} className="flex flex-1 flex-col items-center gap-2">
             <span className="text-xs font-medium text-ink-700">{point.cantidad || ''}</span>
             <div
-              className="w-full rounded-t bg-ink-900"
+              className="w-full rounded-t bg-gradient-to-t from-ink-900 to-ink-700"
               style={{ height: `${Math.max((point.cantidad / max) * 100, 2)}%` }}
               role="img"
               aria-label={`Semana del ${formatDate(point.semana)}: ${point.cantidad} cotizaciones`}

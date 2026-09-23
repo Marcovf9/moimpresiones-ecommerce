@@ -1,13 +1,19 @@
 package com.moimpresiones.api.quote;
 
 import com.moimpresiones.api.common.NotFoundException;
+import com.moimpresiones.api.common.Texto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,25 +24,78 @@ public class AdminQuoteController {
 
     private static final int MAX_PAGE_SIZE = 100;
 
+    private static final ZoneId CORDOBA = ZoneId.of("America/Argentina/Cordoba");
+
     private final QuoteRequestRepository quotes;
 
     public AdminQuoteController(QuoteRequestRepository quotes) {
         this.quotes = quotes;
     }
 
-    /** @param status filtra por estado; si viene vacio devuelve todos. */
+    /**
+     * Bandeja del panel.
+     *
+     * @param status estado, o todos si viene vacio
+     * @param q texto libre: nombre, empresa, telefono, mail o producto pedido
+     * @param desde primera fecha incluida (aaaa-mm-dd, hora de Cordoba)
+     * @param hasta ultima fecha incluida
+     */
     @GetMapping
     @Transactional(readOnly = true)
     public Page<QuoteDetail> list(
             @RequestParam(required = false) QuoteStatus status,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
         var pageable = PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, MAX_PAGE_SIZE));
-        var found = status == null
-                ? quotes.findAllByOrderByCreatedAtDesc(pageable)
-                : quotes.findByStatusOrderByCreatedAtDesc(status, pageable);
-        return found.map(AdminQuoteController::toDetail);
+        return quotes.buscar(nombreDe(status), desdeInstante(desde), hastaInstante(hasta),
+                        patron(q), pageable)
+                .map(AdminQuoteController::toDetail);
+    }
+
+    /** La misma bandeja, para abrir en Excel o en Google Sheets. */
+    @GetMapping(value = "/planilla.csv", produces = "text/csv; charset=UTF-8")
+    @Transactional(readOnly = true)
+    public ResponseEntity<String> planilla(
+            @RequestParam(required = false) QuoteStatus status,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+
+        var encontradas = quotes.buscarTodas(
+                nombreDe(status), desdeInstante(desde), hastaInstante(hasta), patron(q));
+        String nombre = "cotizaciones-" + LocalDate.now(CORDOBA) + ".csv";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nombre + "\"")
+                .body(PlanillaDeCotizaciones.armar(encontradas));
+    }
+
+    /**
+     * El texto de busqueda, listo para un LIKE. Vacio significa "no filtrar".
+     *
+     * <p>Se normaliza igual que en la consulta —minusculas y sin tildes— o
+     * buscar "panaderia" no encontraria "Panaderia del Centro".
+     */
+    private static String patron(String texto) {
+        if (texto == null || texto.isBlank()) return null;
+        return "%" + Texto.normalizar(texto) + "%";
+    }
+
+    private static String nombreDe(QuoteStatus status) {
+        return status == null ? null : status.name();
+    }
+
+    private static Instant desdeInstante(LocalDate fecha) {
+        return fecha == null ? null : fecha.atStartOfDay(CORDOBA).toInstant();
+    }
+
+    /** El dia indicado entra completo: el corte va al arranque del siguiente. */
+    private static Instant hastaInstante(LocalDate fecha) {
+        return fecha == null ? null : fecha.plusDays(1).atStartOfDay(CORDOBA).toInstant();
     }
 
     /**
