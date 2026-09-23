@@ -14,7 +14,7 @@ describe('imagenOptimizada', () => {
     const { src } = imagenOptimizada(CLOUDINARY, 480)
 
     expect(src).toBe(
-      'https://res.cloudinary.com/wadqifnu/image/upload/f_auto,q_auto,c_limit,w_480/v1789680877/moimpresiones/foto.png',
+      'https://res.cloudinary.com/wadqifnu/image/upload/f_auto,q_auto,c_limit,w_480/moimpresiones/foto.png',
     )
   })
 
@@ -24,6 +24,16 @@ describe('imagenOptimizada', () => {
     expect(srcSet).toContain('w_480/')
     expect(srcSet).toContain('w_960/')
     expect(srcSet).toMatch(/ 1x, .* 2x$/)
+  })
+
+  it('no fija la versión, para que reemplazar una foto se vea enseguida', () => {
+    const { src, srcSet } = imagenOptimizada(CLOUDINARY, 480)
+
+    // Con /v1789680877/ en la URL, Cloudinary la marca immutable por 30 días y
+    // el navegador se queda con la foto vieja aunque se haya reemplazado.
+    expect(src).not.toContain('/v1789680877/')
+    expect(src).toContain('/moimpresiones/foto.png')
+    expect(srcSet).not.toContain('/v1789680877/')
   })
 
   it('deja intactas las URLs que no son de Cloudinary, como las del modo local', () => {
