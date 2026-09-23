@@ -13,6 +13,12 @@
   NODE_VERSION = "22"
   # A donde le habla el sitio. Vite la fija en el momento del build.
   VITE_API_URL = "https://api.moimpresiones.com"
+  # Medicion de Google. Se cargan en Netlify (Site configuration -> Environment
+  # variables), no aca: cambiarlas no deberia requerir tocar el repositorio.
+  # Mientras esten vacias, el sitio no carga ninguna etiqueta ni pide cookies.
+  #   VITE_GOOGLE_ADS_ID     AW-1234567890
+  #   VITE_GOOGLE_ADS_LABEL  la etiqueta de la conversion
+  #   VITE_GA_ID             G-XXXXXXXXXX (opcional)
 
 # El sitemap y el robots.txt los genera el backend a partir del catalogo, pero
 # Google los busca en el dominio del sitio: Netlify los trae del backend.
@@ -51,7 +57,10 @@
     # script-src acepta 'unsafe-inline' por los datos estructurados de
     # schema.org, que van en un <script> dentro de la pagina y cambian segun la
     # pantalla, asi que no se les puede calcular un hash fijo.
-    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' https://api.moimpresiones.com; upgrade-insecure-requests"
+    # Las de googletagmanager, google-analytics, googleadservices y doubleclick
+    # son para la medicion de Google Ads: la etiqueta se carga desde ahi y
+    # avisa la conversion con pedidos a esos dominios.
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://www.google.com https://www.google.com.ar https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com; connect-src 'self' https://api.moimpresiones.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://www.googleadservices.com; frame-src https://td.doubleclick.net https://www.googletagmanager.com; upgrade-insecure-requests"
 
 # Los archivos del build llevan un hash en el nombre: se pueden cachear un año.
 [[headers]]

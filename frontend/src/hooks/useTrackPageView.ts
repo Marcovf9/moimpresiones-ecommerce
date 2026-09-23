@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
+import { registrarVista } from '../analitica/medicion'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? ''
 
@@ -17,9 +18,10 @@ function slugDeProducto(path: string): string | undefined {
 /**
  * Avisa al backend que alguien vio una pantalla.
  *
- * <p>No usa cookies ni guarda nada en el navegador: el servidor arma un
- * identificador anónimo que cambia todos los días. Por eso el sitio no
- * necesita cartel de consentimiento.
+ * <p>El conteo propio no usa cookies ni guarda nada en el navegador: el
+ * servidor arma un identificador anónimo que cambia todos los días. Aparte de
+ * eso, si hay medición de Google configurada, se le avisa también: es una sola
+ * pantalla y, sin esto, Analytics contaría solo la primera que se abre.
  */
 export function useTrackPageView() {
   const location = useLocation()
@@ -30,6 +32,8 @@ export function useTrackPageView() {
     const path = location.pathname
     if (esDelPanel(path) || ultimoRegistrado.current === path) return
     ultimoRegistrado.current = path
+
+    registrarVista(path)
 
     const cuerpo = JSON.stringify({
       path,

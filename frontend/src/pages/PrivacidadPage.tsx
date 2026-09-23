@@ -12,7 +12,7 @@ export function PrivacidadPage() {
   const domicilio = domicilioCompleto()
 
   return (
-    <LegalPage title="Política de privacidad" updatedAt="22 de septiembre de 2026">
+    <LegalPage title="Política de privacidad" updatedAt="23 de septiembre de 2026">
       <LegalSection title="1. Responsable de los datos">
         <p>
           {EMPRESA.nombreComercial}
@@ -64,8 +64,8 @@ export function PrivacidadPage() {
 
       <LegalSection title="6. Cookies y estadísticas de visitas">
         <p>
-          <strong>Este sitio no usa cookies</strong> de publicidad ni de seguimiento, ni comparte
-          datos con Google ni con ninguna otra empresa de analítica.
+          <strong>Estadística propia, sin cookies.</strong> Llevamos nuestra propia cuenta de
+          visitas y no necesita guardar nada en tu navegador.
         </p>
         <p>
           Sí llevamos una estadística propia de cuántas personas visitan el sitio y qué secciones
@@ -79,6 +79,20 @@ export function PrivacidadPage() {
           No guardamos direcciones IP, ni identificadores de dispositivo, ni nada que permita
           reconocerte. De los enlaces por los que llega la gente guardamos únicamente el dominio
           (por ejemplo, «instagram.com»), nunca la dirección completa.
+        </p>
+        <p>
+          <strong>Cookies de medición y publicidad.</strong> Hacemos publicidad en Google y, para
+          saber qué anuncios derivan en consultas reales, usamos las herramientas de medición de
+          Google (Google Ads y, si está activo, Google Analytics). Esas herramientas sí guardan
+          cookies en tu navegador y comparten con Google datos de tu visita: qué páginas viste y si
+          llegaste a enviar un pedido de presupuesto. No le enviamos tu nombre, tu teléfono ni el
+          detalle de lo que cotizaste.
+        </p>
+        <p>
+          <strong>Vos decidís.</strong> La primera vez que entrás aparece un aviso con dos botones.
+          Si tocás «Rechazar», Google no guarda ninguna cookie y el sitio funciona igual. Si
+          aceptaste y querés cambiar de idea, borrá los datos del sitio desde la configuración de tu
+          navegador: el aviso vuelve a aparecer y podés elegir de nuevo.
         </p>
         <p>
           El panel de administración guarda datos en el navegador de quien lo usa, solo para

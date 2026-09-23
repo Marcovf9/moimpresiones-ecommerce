@@ -5,6 +5,7 @@ import { InstagramIcon, MailIcon, MenuIcon, WhatsAppIcon } from './Icons'
 import { MenuOverlay } from './MenuOverlay'
 import { useTrackPageView } from '../hooks/useTrackPageView'
 import { WhatsAppFab } from './WhatsAppFab'
+import { AvisoDeCookies } from './AvisoDeCookies'
 import { StructuredData } from './StructuredData'
 import { BarraCMYK } from './BarraCMYK'
 import { domicilioCompleto, EMPRESA } from '../config/empresa'
@@ -78,6 +79,7 @@ export function Layout() {
 
       <SiteFooter />
       <WhatsAppFab />
+      <AvisoDeCookies />
       <StructuredData />
     </div>
   )
